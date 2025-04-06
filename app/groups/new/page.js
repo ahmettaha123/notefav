@@ -18,127 +18,28 @@ const colorOptions = [
   { name: 'Pembe', value: '#ec4899' },
 ];
 
-function CreateGroupForm() {
+function CreateGroupFormContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [color, setColor] = useState('#3b82f6'); // varsayılan mavi
+  const [color, setColor] = useState('#3b82f6');
   const [emailInput, setEmailInput] = useState('');
   const [members, setMembers] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const emailInputRef = useRef(null);
-  const [skipMembers, setSkipMembers] = useState(false); // Üye eklemeyi atla
+  const [skipMembers, setSkipMembers] = useState(false);
 
-  // Kullanıcı giriş yapmamışsa giriş sayfasına yönlendir
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/auth/login?redirect=/groups/new');
     }
   }, [user, authLoading, router]);
 
-  const handleAddMember = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!emailInput.trim()) return;
-    
-    try {
-      // Email formatını kontrol et
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const isEmail = emailRegex.test(emailInput);
-      
-      // Kendini eklemeyi önle
-      if (isEmail && emailInput.toLowerCase() === user.email.toLowerCase()) {
-        setError('Kendinizi üye olarak ekleyemezsiniz, siz otomatik olarak lider olacaksınız.');
-        return;
-      }
-      
-      // Aynı emaili tekrar eklemeyi önle
-      if (members.some(m => m.email && m.email.toLowerCase() === emailInput.toLowerCase())) {
-        setError('Bu kullanıcı zaten eklenmiş');
-        return;
-      }
-      
-      let userData = null;
-      
-      // Kullanıcıyı bul - e-posta veya kullanıcı adına göre
-      if (isEmail) {
-        // Bu e-posta için yetkili bir Supabase API uç noktası olmalı
-        // Şimdilik tüm üye ekleme mantığını atlayalım
-        
-        setError('E-posta ile kullanıcı arama şu anda devre dışı. Grup oluşturma işlemine devam etmek için üye eklemeden grubu oluşturun ve daha sonra üye ekleyin.');
-        return;
-        
-        /* E-posta araması için sunucu tarafında özel API yolu oluşturulmalı
-        const { data } = await fetch('/api/users/search-by-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: emailInput })
-        }).then(res => res.json());
-        
-        if (!data || !data.id) {
-          setError('Bu e-posta ile kayıtlı kullanıcı bulunamadı');
-          return;
-        }
-        
-        userData = {
-          id: data.id,
-          email: data.email,
-          username: data.username || data.email.split('@')[0],
-          full_name: data.full_name
-        };
-        */
-      } else {
-        // Kullanıcı adına göre profil bilgilerini al
-        const { data: usernameUser, error: usernameError } = await supabase
-          .from('profiles')
-          .select('id, username, full_name')
-          .eq('username', emailInput.trim())
-          .maybeSingle();
-          
-        if (usernameError || !usernameUser) {
-          setError('Bu kullanıcı adına sahip bir kullanıcı bulunamadı');
-          return;
-        }
-        
-        // Üye olarak ekle - ancak e-posta adresini bilmiyoruz
-        userData = {
-          id: usernameUser.id,
-          email: '', // E-posta bilgisi burada mevcut değil
-          username: usernameUser.username,
-          full_name: usernameUser.full_name
-        };
-      }
-      
-      if (!userData) {
-        setError('Kullanıcı bilgileri alınamadı.');
-        return;
-      }
-      
-      setMembers([...members, { 
-        id: userData.id,
-        email: userData.email, 
-        username: userData.username || userData.full_name || '',
-        role: 'member'
-      }]);
-      
-      setEmailInput('');
-      setError('');
-      emailInputRef.current?.focus();
-      
-    } catch (error) {
-      console.error('Üye eklerken hata:', error);
-      setError('Üye eklenirken bir hata oluştu. Alternatif olarak, grubu önce üyesiz oluşturup daha sonra üye ekleyebilirsiniz.');
-    }
-  };
-
-  const handleRemoveMember = (emailToRemove) => {
-    setMembers(members.filter(m => m.email !== emailToRemove));
-  };
-
-  const handleSaveGroup = async () => {
     if (!name.trim()) {
       setError('Grup adı gereklidir.');
       return;
@@ -207,14 +108,13 @@ function CreateGroupForm() {
         .insert({
           group_id: groupData.id,
           user_id: user.id,
-          role: 'leader', // Rol değerinin doğru olduğundan emin olalım
+          role: 'leader',
           joined_at: new Date().toISOString()
         });
         
       if (leaderError) {
         console.error('Lider eklenirken hata:', leaderError);
         setError('Grup oluşturuldu ancak lider eklenirken hata oluştu. Gruplara gidin ve tekrar deneyin.');
-        // Lider eklenemese bile grup oluştu, devam edelim
         router.push('/groups');
         return;
       }
@@ -225,7 +125,7 @@ function CreateGroupForm() {
         try {
           const memberInserts = members.map(member => ({
             group_id: groupData.id,
-            user_id: member.id, 
+            user_id: member.id,
             role: 'member',
             joined_at: new Date().toISOString()
           }));
@@ -257,12 +157,10 @@ function CreateGroupForm() {
         });
       } catch (activityError) {
         console.error('Grup aktivitesi kaydedilirken hata:', activityError);
-        // Aktivite kaydetme hatası kritik değil, devam edebiliriz
       }
       
       // Başarı durumuna göre yönlendirme yap
       if (memberError) {
-        // Üye eklemede hata varsa, hata mesajı göster ama yine de grup detay sayfasına git
         alert('Grup oluşturuldu ancak bazı üyeler eklenirken sorun oluştu. Daha sonra tekrar deneyebilirsiniz.');
       }
       
@@ -304,7 +202,7 @@ function CreateGroupForm() {
           <h1 className="text-3xl font-bold mt-4">Yeni Grup</h1>
         </div>
 
-        <form onSubmit={handleSaveGroup} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="bg-red-50 text-red-500 p-3 rounded">{error}</div>
           )}
@@ -355,6 +253,14 @@ function CreateGroupForm() {
         </form>
       </div>
     </div>
+  );
+}
+
+function CreateGroupForm() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <CreateGroupFormContent />
+    </Suspense>
   );
 }
 

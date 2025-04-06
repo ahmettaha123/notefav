@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import supabase from '../../lib/supabase';
 
-function GoalsContent() {
+function GoalsInner() {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,6 +102,14 @@ function GoalsContent() {
         </div>
       )}
     </div>
+  );
+}
+
+function GoalsContent() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <GoalsInner />
+    </Suspense>
   );
 }
 

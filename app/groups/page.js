@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import supabase from '../../lib/supabase';
 
-function GroupsContent() {
+function GroupsInner() {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -87,6 +87,14 @@ function GroupsContent() {
         </div>
       )}
     </div>
+  );
+}
+
+function GroupsContent() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <GroupsInner />
+    </Suspense>
   );
 }
 

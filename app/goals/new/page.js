@@ -6,7 +6,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import supabase from '../../../lib/supabase';
 
-function CreateGoalForm() {
+function CreateGoalFormContent() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -130,6 +130,14 @@ function CreateGoalForm() {
         </form>
       </div>
     </div>
+  );
+}
+
+function CreateGoalForm() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <CreateGoalFormContent />
+    </Suspense>
   );
 }
 
