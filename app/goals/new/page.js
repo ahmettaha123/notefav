@@ -1,68 +1,79 @@
 'use client';
 
-import { Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
 import supabase from '../../../lib/supabase';
+import { Suspense } from 'react';
 
-function CreateGoalFormContent() {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+function CreateGoalFormInner() {
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!user && !authLoading) {
+      router.push('/auth/login');
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        router.push('/auth/login');
-        return;
-      }
+      setLoading(true);
+      setError('');
 
-      const { data: goal, error } = await supabase
+      const { data: goal, error: goalError } = await supabase
         .from('goals')
-        .insert([
-          {
-            title,
-            description,
-            due_date: dueDate,
-            user_id: session.user.id,
-            status: 'not_started'
-          }
-        ])
+        .insert({
+          user_id: user.id,
+          title,
+          description,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
         .select()
         .single();
 
-      if (error) throw error;
+      if (goalError) {
+        console.error('Hedef oluşturulurken hata:', goalError);
+        setError('Hedef oluşturulamadı: ' + goalError.message);
+        return;
+      }
 
       router.push('/goals');
     } catch (error) {
-      setError('Hedef oluşturulurken bir hata oluştu: ' + error.message);
+      console.error('Beklenmeyen hata:', error);
+      setError('Hedef oluşturulamadı: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  if (authLoading) {
+    return <div className="flex justify-center py-16"><p>Yükleniyor...</p></div>;
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Yeni Hedef</h1>
           <Link
             href="/goals"
-            className="text-blue-500 hover:underline"
+            className="text-blue-600 hover:text-blue-500"
           >
-            ← Hedeflere Dön
+            Hedeflere Dön
           </Link>
-          <h1 className="text-3xl font-bold mt-4">Yeni Hedef</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -79,8 +90,9 @@ function CreateGoalFormContent() {
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               required
+              className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              placeholder="Hedef başlığı"
             />
           </div>
 
@@ -92,37 +104,18 @@ function CreateGoalFormContent() {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              required
               rows={4}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
+              className="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              placeholder="Hedef açıklaması"
             />
           </div>
 
-          <div>
-            <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">
-              Bitiş Tarihi
-            </label>
-            <input
-              type="date"
-              id="dueDate"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div className="flex justify-end gap-4">
-            <Link
-              href="/goals"
-              className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              İptal
-            </Link>
+          <div className="flex justify-end">
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
             >
               {loading ? 'Kaydediliyor...' : 'Kaydet'}
             </button>
@@ -130,6 +123,14 @@ function CreateGoalFormContent() {
         </form>
       </div>
     </div>
+  );
+}
+
+function CreateGoalFormContent() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <CreateGoalFormInner />
+    </Suspense>
   );
 }
 

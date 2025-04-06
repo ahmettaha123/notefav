@@ -7,7 +7,7 @@ import Link from 'next/link';
 import supabase from '../../../lib/supabase';
 import { Suspense } from 'react';
 
-function SignupFormContent() {
+function SignupFormInner() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -159,6 +159,14 @@ function SignupFormContent() {
         </form>
       </div>
     </div>
+  );
+}
+
+function SignupFormContent() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <SignupFormInner />
+    </Suspense>
   );
 }
 

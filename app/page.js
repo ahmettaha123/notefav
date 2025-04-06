@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../hooks/useAuth';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-function HomePageContent() {
+function HomePageInner() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,6 +33,14 @@ function HomePageContent() {
         </div>
       </div>
     </div>
+  );
+}
+
+function HomePageContent() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <HomePageInner />
+    </Suspense>
   );
 }
 
