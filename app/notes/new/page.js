@@ -5,12 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
 import supabase from '../../../lib/supabase';
-import { Suspense } from 'react';
 // Resim yükleme yardımcı kodlarını kaldırdık
 // import { uploadImage, insertImageToText } from '../../../utils/imageUpload';
 
 // Temel zengin metin düzenleyici için basit butonlar ekliyoruz
-function CreateNoteFormContent() {
+export default function NewNote() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,7 +27,6 @@ function CreateNoteFormContent() {
   const tagInputRef = useRef(null);
   const textareaRef = useRef(null);
   // const fileInputRef = useRef(null);
-  const [groups, setGroups] = useState([]);
 
   // Grup bilgilerini yükle
   useEffect(() => {
@@ -60,45 +58,6 @@ function CreateNoteFormContent() {
     
     fetchGroupInfo();
   }, [groupId, user]);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/auth/login?redirect=/notes/new');
-      return;
-    }
-
-    const fetchGroups = async () => {
-      try {
-        const { data: groupsData, error: groupsError } = await supabase
-          .from('group_members')
-          .select(`
-            groups (
-              id,
-              name,
-              color
-            )
-          `)
-          .eq('user_id', user.id);
-
-        if (groupsError) {
-          console.error('Gruplar alınırken hata:', groupsError);
-          return;
-        }
-
-        const validGroups = groupsData
-          .map(item => item.groups)
-          .filter(group => group !== null);
-
-        setGroups(validGroups);
-      } catch (error) {
-        console.error('Gruplar alınırken beklenmeyen hata:', error);
-      }
-    };
-
-    if (user) {
-      fetchGroups();
-    }
-  }, [user, authLoading, router]);
 
   // Zengin metin işlemleri için yardımcı fonksiyonlar
   const insertFormat = (format) => {
@@ -528,22 +487,6 @@ function CreateNoteFormContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-function CreateNoteForm() {
-  return (
-    <Suspense fallback={<div>Yükleniyor...</div>}>
-      <CreateNoteFormContent />
-    </Suspense>
-  );
-}
-
-export default function CreateNote() {
-  return (
-    <Suspense fallback={<div>Yükleniyor...</div>}>
-      <CreateNoteForm />
-    </Suspense>
   );
 }
 

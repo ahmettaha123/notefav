@@ -31,7 +31,7 @@ export async function GET(request) {
           created_by,
           profiles (
             username,
-            display_name
+            full_name
           )
         )
       `)

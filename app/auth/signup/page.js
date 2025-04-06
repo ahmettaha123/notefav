@@ -1,187 +1,109 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
-import supabase from '../../../lib/supabase';
-import { Suspense } from 'react';
+import { useAuth } from '../../../hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
-function SignupFormInner() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setMessage('');
+    
+    // Validation
     if (password !== confirmPassword) {
-      setError('Şifreler eşleşmiyor.');
+      setError('Şifreler eşleşmiyor');
       return;
     }
-
-    try {
-      setLoading(true);
-      setError('');
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-
-      if (signUpError) {
-        console.error('Kayıt olurken hata:', signUpError);
-        setError('Kayıt olunamadı: ' + signUpError.message);
-        return;
-      }
-
-      // Profil oluştur
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          username: email.split('@')[0],
-          full_name: email.split('@')[0],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-
-      if (profileError) {
-        console.error('Profil oluşturulurken hata:', profileError);
-      }
-
-      // Redirect to login page with success message
-      router.push('/auth/login?message=Kayıt başarılı! Lütfen e-posta adresinizi doğrulayın.');
-    } catch (error) {
-      console.error('Kayıt olurken beklenmeyen hata:', error);
-      setError('Kayıt olunamadı: ' + error.message);
-    } finally {
-      setLoading(false);
+    
+    if (password.length < 6) {
+      setError('Şifre en az 6 karakter olmalıdır');
+      return;
     }
+    
+    setLoading(true);
+    
+    const result = await signUp(email, password);
+    if (result.success) {
+      setMessage('Kayıt başarılı! E-posta adresinizi kontrol edin.');
+    } else {
+      setError(result.error);
+    }
+    
+    setLoading(false);
   };
 
-  if (authLoading) {
-    return <div className="flex justify-center py-16"><p>Yükleniyor...</p></div>;
-  }
-
-  if (user) {
-    router.push('/dashboard');
-    return null;
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Hesap Oluştur
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Zaten hesabınız var mı?{' '}
-            <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-              Giriş Yap
-            </Link>
-          </p>
+    <div className="max-w-md mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-center">Üye Ol</h1>
+      
+      <form onSubmit={handleSubmit} className="card">
+        {error && (
+          <p className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</p>
+        )}
+        
+        {message && (
+          <p className="mb-4 p-3 bg-green-100 text-green-800 rounded-md">{message}</p>
+        )}
+        
+        <div className="mb-4">
+          <label className="block mb-2">E-posta</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+            required
+          />
         </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 text-red-500 p-3 rounded">{error}</div>
-          )}
-
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                E-posta
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="E-posta"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Şifre
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Şifre"
-              />
-            </div>
-            <div>
-              <label htmlFor="confirmPassword" className="sr-only">
-                Şifre Tekrar
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Şifre Tekrar"
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {loading ? 'Kaydediliyor...' : 'Kayıt Ol'}
-            </button>
-          </div>
-        </form>
-      </div>
+        
+        <div className="mb-4">
+          <label className="block mb-2">Şifre</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+            required
+          />
+        </div>
+        
+        <div className="mb-6">
+          <label className="block mb-2">Şifre Tekrar</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+            required
+          />
+        </div>
+        
+        <button 
+          type="submit" 
+          className="btn-primary w-full"
+          disabled={loading}
+        >
+          {loading ? 'Kaydediliyor...' : 'Üye Ol'}
+        </button>
+      </form>
+      
+      <p className="mt-6 text-center">
+        Zaten hesabınız var mı?{' '}
+        <Link href="/auth/login" className="text-cyan-500 hover:underline">
+          Giriş Yap
+        </Link>
+      </p>
     </div>
-  );
-}
-
-function SignupFormContent() {
-  return (
-    <Suspense fallback={<div>Yükleniyor...</div>}>
-      <SignupFormInner />
-    </Suspense>
-  );
-}
-
-function SignupForm() {
-  return (
-    <Suspense fallback={<div>Yükleniyor...</div>}>
-      <SignupFormContent />
-    </Suspense>
-  );
-}
-
-export default function Signup() {
-  return (
-    <Suspense fallback={<div>Yükleniyor...</div>}>
-      <SignupForm />
-    </Suspense>
   );
 }

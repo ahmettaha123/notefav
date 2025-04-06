@@ -1,17 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
 import supabase from '../../../lib/supabase';
-import { Suspense } from 'react';
 
-function GroupContent({ params }) {
+export default function GroupPage({ params }) {
   const { id } = params;
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [group, setGroup] = useState(null);
   const [members, setMembers] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -591,13 +589,5 @@ function GroupContent({ params }) {
         </div>
       )}
     </div>
-  );
-}
-
-export default function GroupPage({ params }) {
-  return (
-    <Suspense fallback={<div>Yükleniyor...</div>}>
-      <GroupContent params={params} />
-    </Suspense>
   );
 }
