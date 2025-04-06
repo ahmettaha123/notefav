@@ -1,22 +1,20 @@
-import { createServerSupabaseClient } from '@/utils/supabase-server';
+import supabase from '../../../lib/supabase';
 import { NextResponse } from 'next/server';
 
 // Tüm grupları getir
 export async function GET(request) {
   try {
-    const supabase = createServerSupabaseClient();
-    
     // Kullanıcının oturumunu kontrol et
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!user) {
+    if (!session || !session.user) {
       return NextResponse.json(
         { error: 'Yetkilendirme gerekli' }, 
         { status: 401 }
       );
     }
+    
+    const user = session.user;
     
     // Kullanıcının üye olduğu tüm grupları getir
     const { data: memberGroups, error: memberError } = await supabase
@@ -84,19 +82,17 @@ export async function GET(request) {
 // Yeni grup oluştur
 export async function POST(request) {
   try {
-    const supabase = createServerSupabaseClient();
-    
     // Kullanıcının oturumunu kontrol et
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!user) {
+    if (!session || !session.user) {
       return NextResponse.json(
         { error: 'Yetkilendirme gerekli' }, 
         { status: 401 }
       );
     }
+    
+    const user = session.user;
     
     // Kullanıcı profilini al
     const { data: profile, error: profileError } = await supabase

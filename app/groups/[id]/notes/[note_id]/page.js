@@ -231,42 +231,41 @@ export default function GroupNoteDetail() {
             {renderMarkdown(note.content)}
           </div>
         </div>
+        
+        <style jsx global>{`
+          .markdown-content p,
+          .markdown-content h1,
+          .markdown-content h2, 
+          .markdown-content h3,
+          .markdown-content h4,
+          .markdown-content h5,
+          .markdown-content h6,
+          .markdown-content li,
+          .markdown-content table,
+          .markdown-content blockquote,
+          .markdown-content pre {
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+          }
+          
+          .markdown-content pre {
+            white-space: pre-wrap;
+          }
+          
+          .markdown-content img {
+            max-width: 100%;
+            height: auto;
+          }
+          
+          .markdown-content table {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+          }
+        `}</style>
       </div>
     </div>
   );
-}
-
-<style jsx global>{`
-  .markdown-content p,
-  .markdown-content h1,
-  .markdown-content h2, 
-  .markdown-content h3,
-  .markdown-content h4,
-  .markdown-content h5,
-  .markdown-content h6,
-  .markdown-content li,
-  .markdown-content table,
-  .markdown-content blockquote,
-  .markdown-content pre {
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    word-break: break-word;
-    max-width: 100%;
-    overflow: hidden;
-  }
-  
-  .markdown-content pre {
-    white-space: pre-wrap;
-  }
-  
-  .markdown-content img {
-    max-width: 100%;
-    height: auto;
-  }
-  
-  .markdown-content table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-  }
-`}</style> 
+} 
