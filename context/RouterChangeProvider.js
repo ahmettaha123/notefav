@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, Suspense } from 'react';
+import { createContext, useContext, useState, useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 // Yükleme ekranı komponenti

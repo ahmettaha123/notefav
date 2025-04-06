@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
@@ -17,7 +17,7 @@ const colorOptions = [
   { name: 'Pembe', value: '#ec4899' },
 ];
 
-export default function NewGroup() {
+function NewGroupContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [name, setName] = useState('');
@@ -273,10 +273,6 @@ export default function NewGroup() {
     }
   };
 
-  if (authLoading) {
-    return <div className="flex justify-center py-16"><p>Yükleniyor...</p></div>;
-  }
-  
   if (!user) {
     return (
       <div className="text-center py-16">
@@ -443,5 +439,13 @@ export default function NewGroup() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function NewGroup() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-16"><p>Yükleniyor...</p></div>}>
+      <NewGroupContent />
+    </Suspense>
   );
 }

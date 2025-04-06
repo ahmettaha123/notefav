@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
 import supabase from '../../lib/supabase';
 
-export default function Goals() {
+function GoalsContent() {
   const { user, loading: authLoading } = useAuth();
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -181,5 +181,13 @@ export default function Goals() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Goals() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-16"><p>Yükleniyor...</p></div>}>
+      <GoalsContent />
+    </Suspense>
   );
 }
