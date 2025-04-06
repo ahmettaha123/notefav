@@ -1,0 +1,358 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Ana tema renkleri - Aydınlık mod */
+  --primary: #f97316; /* Turuncu */
+  --primary-dark: #ea580c; /* Koyu turuncu */
+  --primary-light: #fb923c; /* Açık turuncu */
+  --secondary: #64748b; /* Griye çalan mavi */
+  --accent: #f59e0b; /* Sarı-turuncu aksan rengi */
+  --background: #f8fafc; /* Çok açık gri arkaplan */
+  --foreground: #1e293b; /* Koyu lacivert-gri metin */
+  --card-bg: #ffffff; /* Kart arkaplanı */
+  --card-border: #e2e8f0; /* Kart kenarlık */
+  --muted: #94a3b8; /* Soluk metin rengi */
+  --muted-bg: #f1f5f9; /* Soluk arkaplan rengi */
+  --success: #10b981; /* Başarı rengi */
+  --warning: #f59e0b; /* Uyarı rengi */
+  --error: #ef4444; /* Hata rengi */
+  --primary-color: #f97316;
+  --primary-dark: #ea580c;
+  --primary-light: #fdba74;
+  --secondary-color: #f59e0b;
+  --secondary-dark: #d97706;
+  --secondary-light: #fcd34d;
+}
+
+.dark {
+  /* Ana tema renkleri - Karanlık mod */
+  --primary: #f97316;
+  --primary-dark: #c2410c;
+  --primary-light: #fdba74;
+  --secondary: #475569;
+  --accent: #fbbf24;
+  --background: #0f172a; /* Koyu lacivert arkaplan */
+  --foreground: #e2e8f0; /* Açık gri metin */
+  --card-bg: #1e293b; /* Kart arkaplanı */
+  --card-border: #334155; /* Kart kenarlık */
+  --muted: #64748b; /* Soluk metin rengi */
+  --muted-bg: #1e293b; /* Soluk arkaplan rengi */
+  --success: #059669;
+  --warning: #d97706;
+  --error: #dc2626;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+/* Markdown içeriği için taşma kontrolleri */
+.prose {
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+.prose p, 
+.prose h1, 
+.prose h2, 
+.prose h3, 
+.prose h4, 
+.prose h5, 
+.prose h6, 
+.prose li, 
+.prose blockquote,
+.prose a {
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow: hidden !important;
+}
+
+.prose pre {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  white-space: pre-wrap !important;
+}
+
+.prose img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+.prose table {
+  max-width: 100% !important;
+  display: block !important;
+  overflow-x: auto !important;
+}
+
+.markdown-content * {
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+/* Uzun kelimeler ve URL'ler için taşma kontrolü */
+.break-words {
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  hyphens: auto !important;
+}
+
+.btn-primary {
+  @apply bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold py-2 px-6 rounded-md
+    shadow-md hover:shadow-lg transition-all duration-300 inline-block transform hover:-translate-y-1;
+}
+
+.btn-secondary {
+  @apply border border-slate-300 dark:border-slate-700 hover:border-orange-500 dark:hover:border-orange-500
+    text-slate-800 dark:text-slate-200 font-semibold py-2 px-6 rounded-md transition-all duration-300
+    hover:shadow-md transform hover:-translate-y-1;
+}
+
+.btn-outline {
+  @apply border-2 border-orange-500 text-orange-500 font-semibold py-2 px-6 rounded-md
+    transition-all duration-300 hover:bg-orange-500 hover:text-white hover:shadow-md;
+}
+
+.card {
+  @apply bg-white dark:bg-slate-800 rounded-lg border border-gray-100 dark:border-gray-700 
+    shadow-sm p-6 transition-all duration-300 hover:shadow-md;
+}
+
+.card-hover {
+  @apply hover:-translate-y-1;
+}
+
+/* Form input stilleri */
+@layer components {
+  input, textarea, select {
+    @apply bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-600 rounded-md;
+  }
+  
+  input::placeholder, textarea::placeholder {
+    @apply text-slate-400 dark:text-slate-500;
+  }
+
+  /* Modern buton hover efektleri */
+  .btn-primary, .btn-secondary {
+    @apply relative overflow-hidden;
+  }
+  
+  .btn-primary::after, .btn-secondary::after {
+    @apply content-[''] absolute left-0 top-0 h-full w-0 bg-white bg-opacity-20 transform skew-x-12 transition-all duration-300 ease-out;
+  }
+  
+  .btn-primary:hover::after, .btn-secondary:hover::after {
+    @apply w-full;
+  }
+
+  .container {
+    @apply max-w-6xl mx-auto px-4;
+  }
+  
+  .form-input {
+    @apply w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 px-4 
+      focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-slate-800 
+      dark:text-white outline-none transition-all duration-300;
+  }
+  
+  .form-label {
+    @apply block text-gray-700 dark:text-gray-300 font-medium mb-1;
+  }
+  
+  .form-error {
+    @apply text-red-500 text-sm mt-1;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .badge-primary {
+    @apply bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200;
+  }
+  
+  .badge-secondary {
+    @apply bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200;
+  }
+  
+  .badge-success {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+  }
+  
+  .badge-error {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+  }
+  
+  .divider {
+    @apply border-t border-gray-200 dark:border-gray-800 my-8;
+  }
+  
+  .link {
+    @apply text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300 
+      transition-colors duration-300 underline-offset-2 hover:underline;
+  }
+}
+
+/* Tema geçişi animasyonu */
+body {
+  @apply transition-colors duration-300;
+}
+
+/* ReactQuill Editör Stilleri - Turuncu tema uyumlu */
+.ql-toolbar {
+  @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-t-md !important;
+}
+
+.ql-container {
+  @apply bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 border-t-0 rounded-b-md !important;
+}
+
+.ql-editor {
+  @apply text-slate-900 dark:text-slate-100 min-h-[200px] !important;
+}
+
+.ql-picker-label {
+  @apply text-slate-700 dark:text-slate-300 !important;
+}
+
+.ql-picker-options {
+  @apply bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 !important;
+}
+
+.ql-snow .ql-stroke {
+  @apply stroke-slate-700 dark:stroke-slate-300 !important;
+}
+
+.ql-snow .ql-fill {
+  @apply fill-slate-700 dark:fill-slate-300 !important;
+}
+
+.ql-snow .ql-picker-options .ql-picker-item {
+  @apply text-slate-700 dark:text-slate-300 !important;
+}
+
+.ql-snow .ql-tooltip {
+  @apply bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 shadow-lg !important;
+}
+
+.ql-snow .ql-tooltip input[type=text] {
+  @apply border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 !important;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Gradyanlar */
+  .gradient-orange {
+    @apply bg-gradient-to-r from-orange-500 to-amber-500;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+  
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+  
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+  
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+  
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0,0,0,0.12);
+  }
+  
+  .bg-gradient-primary {
+    @apply bg-gradient-to-r from-orange-500 to-amber-500;
+  }
+  
+  .bg-gradient-primary-soft {
+    @apply bg-gradient-to-r from-orange-500/30 to-amber-500/30;
+  }
+  
+  .bg-glass {
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm;
+  }
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+  
+  ::selection {
+    @apply bg-orange-500/30 dark:bg-orange-500/50;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400 dark:bg-slate-600;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
