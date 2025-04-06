@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
 import supabase from '../../../lib/supabase';
+import { Suspense } from 'react';
 
 // Grup renk seçenekleri
 const colorOptions = [
@@ -17,9 +18,10 @@ const colorOptions = [
   { name: 'Pembe', value: '#ec4899' },
 ];
 
-export default function NewGroup() {
+function CreateGroupForm() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('#3b82f6'); // varsayılan mavi
@@ -290,158 +292,76 @@ export default function NewGroup() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Yeni Grup</h1>
-        <div className="flex gap-2">
-          <Link 
-            href="/groups" 
-            className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-8">
+          <Link
+            href="/groups"
+            className="text-blue-500 hover:underline"
           >
-            İptal
+            ← Gruplara Dön
           </Link>
-          <button 
-            onClick={handleSaveGroup}
-            disabled={saving}
-            className="btn-primary"
-          >
-            {saving ? 'Kaydediliyor...' : 'Grup Oluştur'}
-          </button>
+          <h1 className="text-3xl font-bold mt-4">Yeni Grup</h1>
         </div>
-      </div>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200 rounded-md">
-          {error}
-        </div>
-      )}
-      
-      <div className="card mb-6">
-        <div className="space-y-6">
-          {/* Grup Adı */}
+
+        <form onSubmit={handleSaveGroup} className="space-y-6">
+          {error && (
+            <div className="bg-red-50 text-red-500 p-3 rounded">{error}</div>
+          )}
+
           <div>
-            <label htmlFor="name" className="block mb-2 font-medium">
-              Grup Adı <span className="text-red-500">*</span>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Grup Adı
             </label>
             <input
-              id="name"
               type="text"
+              id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
-              placeholder="Grubunuza bir isim verin..."
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
             />
           </div>
-          
-          {/* Grup Açıklaması */}
+
           <div>
-            <label htmlFor="description" className="block mb-2 font-medium">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
               Açıklama
             </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
-              placeholder="Grubunuzun amacını açıklayın..."
-            ></textarea>
+              rows={4}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
           </div>
-          
-          {/* Grup Rengi */}
-          <div>
-            <label className="block mb-2 font-medium">
-              Grup Rengi
-            </label>
-            <div className="flex flex-wrap gap-3">
-              {colorOptions.map(option => (
-                <button 
-                  key={option.value}
-                  type="button"
-                  onClick={() => setColor(option.value)}
-                  className={`w-8 h-8 rounded-full border-2 ${color === option.value ? 'border-black dark:border-white' : 'border-transparent'}`}
-                  style={{ backgroundColor: option.value }}
-                  title={option.name}
-                ></button>
-              ))}
-            </div>
+
+          <div className="flex justify-end gap-4">
+            <Link
+              href="/groups"
+              className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              İptal
+            </Link>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+            >
+              {saving ? 'Oluşturuluyor...' : 'Oluştur'}
+            </button>
           </div>
-        </div>
+        </form>
       </div>
-        
-      {/* Üyeleri atla seçeneği */}
-      <div className="mb-4 flex items-center">
-        <input
-          type="checkbox"
-          id="skipMembers"
-          checked={skipMembers}
-          onChange={(e) => setSkipMembers(e.target.checked)}
-          className="mr-2"
-        />
-        <label htmlFor="skipMembers" className="cursor-pointer">
-          Şimdilik üye eklemeyi atla (daha sonra ekleyebilirsiniz)
-        </label>
-      </div>
-        
-      {/* Üyeler */}
-      {!skipMembers && (
-        <div className="card">
-          <h2 className="text-xl font-semibold mb-4">Grup Üyeleri</h2>
-          
-          <div className="mb-4 p-3 bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200 rounded-md">
-            <span className="font-medium block mb-1">Not:</span>
-            Siz otomatik olarak grubun lideri olacaksınız. Eklemek istediğiniz diğer üyeleri aşağıda belirtebilirsiniz.
-            Sadece sistemde kayıtlı kullanıcıları ekleyebilirsiniz.
-          </div>
-          
-          {/* Üye Ekleme Formu */}
-          <form onSubmit={handleAddMember} className="mb-6">
-            <div className="flex">
-              <input
-                type="email"
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                ref={emailInputRef}
-                className="flex-1 px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
-                placeholder="Üye e-posta adresi..."
-              />
-              <button 
-                type="submit" 
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-r-md"
-              >
-                Ekle
-              </button>
-            </div>
-          </form>
-          
-          {/* Eklenen Üyeler Listesi */}
-          {members.length > 0 ? (
-            <div className="space-y-2">
-              <h3 className="font-medium">Eklenen Üyeler:</h3>
-              <ul className="space-y-2">
-                {members.map(member => (
-                  <li key={member.email || member.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-md">
-                    <div>
-                      <span className="font-medium">{member.username || member.email?.split('@')[0] || 'Bilinmeyen Kullanıcı'}</span>
-                      {member.email && <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">({member.email})</span>}
-                    </div>
-                    <button 
-                      onClick={() => handleRemoveMember(member.email || member.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <p className="text-gray-600 dark:text-gray-400">Henüz üye eklenmedi.</p>
-          )}
-        </div>
-      )}
     </div>
+  );
+}
+
+export default function CreateGroup() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <CreateGroupForm />
+    </Suspense>
   );
 }

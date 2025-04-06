@@ -1,105 +1,104 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useState } from 'react';
-import { useAuth } from '../../../hooks/useAuth';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import supabase from '../../../lib/supabase';
 
-export default function ResetPassword() {
-  const { user } = useAuth();
+function ResetPasswordForm() {
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState({ text: '', type: '' });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const handleResetPassword = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage({ text: '', type: '' });
-    
+    setLoading(true);
+    setError('');
+    setSuccess(false);
+
     try {
-      setLoading(true);
-      
-      const emailToReset = user ? user.email : email;
-      
-      if (!emailToReset) {
-        setMessage({ 
-          text: 'Lütfen geçerli bir e-posta adresi girin', 
-          type: 'error' 
-        });
-        return;
-      }
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(emailToReset, {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/update-password`,
       });
-      
+
       if (error) throw error;
-      
-      setMessage({ 
-        text: 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.', 
-        type: 'success' 
-      });
+
+      setSuccess(true);
     } catch (error) {
-      console.error('Şifre sıfırlama hatası:', error);
-      setMessage({ 
-        text: `Hata: ${error.message}`, 
-        type: 'error' 
-      });
+      setError('Şifre sıfırlama isteği gönderilirken bir hata oluştu: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">Şifre Sıfırlama</h1>
-      
-      <form onSubmit={handleResetPassword} className="card">
-        {message.text && (
-          <div className={`mb-6 p-3 rounded-md ${
-            message.type === 'success' 
-              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' 
-              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
-          }`}>
-            {message.text}
-          </div>
-        )}
-        
-        {!user && (
-          <div className="mb-6">
-            <label className="block mb-2">E-posta</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
-              placeholder="E-posta adresiniz"
-              required
-            />
-          </div>
-        )}
-        
-        <div className="mb-6">
-          <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-            {user 
-              ? 'Şifrenizi sıfırlamak için bir e-posta göndereceğiz.' 
-              : 'E-posta adresinizi girin ve şifre sıfırlama talimatlarını göndereceğiz.'}
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Şifrenizi Sıfırlayın
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
           </p>
         </div>
-        
-        <button 
-          type="submit" 
-          className="btn-primary w-full"
-          disabled={loading}
-        >
-          {loading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder'}
-        </button>
-        
-        <div className="mt-4 text-center">
-          <Link href={user ? "/profile" : "/auth/login"} className="text-cyan-500 hover:underline">
-            {user ? 'Profilime Dön' : 'Giriş Sayfasına Dön'}
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 text-red-500 p-3 rounded">{error}</div>
+          )}
+          {success && (
+            <div className="bg-green-50 text-green-500 p-3 rounded">
+              Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.
+            </div>
+          )}
+          <div>
+            <label htmlFor="email-address" className="sr-only">
+              E-posta adresi
+            </label>
+            <input
+              id="email-address"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              placeholder="E-posta adresi"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              {loading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder'}
+            </button>
+          </div>
+        </form>
+        <div className="text-center">
+          <Link
+            href="/auth/login"
+            className="font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            Giriş sayfasına dön
           </Link>
         </div>
-      </form>
+      </div>
     </div>
+  );
+}
+
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

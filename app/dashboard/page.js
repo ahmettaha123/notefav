@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
 import supabase from '../../lib/supabase';
 import { useRouterChange } from '../../context/RouterChangeProvider';
+import { Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // LoadingOverlay artık global olarak kullanılacak, bu nedenle kaldırıyoruz
 // Ancak sayfaya özel loading durumları için basit bir spinner ekleyelim
@@ -17,21 +19,16 @@ const Spinner = () => (
   </div>
 );
 
-export default function Dashboard() {
+function DashboardContent() {
   const { user, loading: authLoading } = useAuth();
   const [notes, setNotes] = useState([]);
   const [goals, setGoals] = useState([]);
   const [stats, setStats] = useState({ notes: 0, goals: 0, completed: 0 });
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
-  // Artık global router değişimlerini kullanacağız
   const { isNavigating } = useRouterChange();
-
-  // Eski sayfa geçişi efekti artık gerekli değil
-  // useEffect(() => {
-  //   // Sayfa geçişlerini dinle
-  //   ...
-  // }, []);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -400,5 +397,13 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
