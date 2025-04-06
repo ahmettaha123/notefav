@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
@@ -9,7 +9,7 @@ import supabase from '../../../lib/supabase';
 // import { uploadImage, insertImageToText } from '../../../utils/imageUpload';
 
 // Temel zengin metin düzenleyici için basit butonlar ekliyoruz
-export default function NewNote() {
+function NewNoteContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -524,4 +524,12 @@ function renderMarkdown(text) {
   }).join('');
   
   return <div dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+export default function NewNote() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-16"><p>Yükleniyor...</p></div>}>
+      <NewNoteContent />
+    </Suspense>
+  );
 }

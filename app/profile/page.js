@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import supabase from '../../lib/supabase';
 import Link from 'next/link';
 
-export default function Profile() {
+function ProfileContent() {
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ export default function Profile() {
         };
         
         setProfile(userProfile);
-        setDisplayName(userProfile.full_name || '');
+        setDisplayName(userProfile.full_name || user.email?.split('@')[0] || '');
         setBio(userProfile.bio || '');
         
         // Notları sayısını çek
@@ -90,10 +90,11 @@ export default function Profile() {
       setSaving(true);
       
       // Profili güncelle veya oluştur
+      const defaultName = user.email?.split('@')[0] || '';
       const updates = {
         id: user.id,
-        username: user.email?.split('@')[0] || '',
-        full_name: displayName.trim(),
+        username: defaultName,
+        full_name: displayName.trim() || defaultName,
         bio: bio.trim(),
         updated_at: new Date().toISOString()
       };
@@ -113,6 +114,7 @@ export default function Profile() {
       });
       setIsEditing(false);
       setProfile({ ...profile, ...updates });
+      setDisplayName(updates.full_name);
     } catch (error) {
       console.error('Profil güncellenirken hata:', error);
       setMessage({ 
@@ -167,7 +169,9 @@ export default function Profile() {
               </div>
               
               <div className="mt-4 text-center">
-                <h2 className="text-xl font-semibold">{profile?.full_name || user.email?.split('@')[0]}</h2>
+                <h2 className="text-xl font-semibold">
+                  {profile?.full_name || user.email?.split('@')[0]}
+                </h2>
                 <p className="text-slate-600 dark:text-slate-400">{user.email}</p>
               </div>
               
@@ -278,5 +282,13 @@ export default function Profile() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Profile() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-16"><p>Yükleniyor...</p></div>}>
+      <ProfileContent />
+    </Suspense>
   );
 }

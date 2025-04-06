@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useContext, useState, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 // Yükleme ekranı komponenti
@@ -21,15 +21,11 @@ const LoadingOverlay = ({ show }) => {
 };
 
 // Router değişimlerini yönetmek için context
-export const RouterChangeContext = createContext({
+const RouterChangeContext = createContext({
   isNavigating: false
 });
 
-export const useRouterChange = () => {
-  return useContext(RouterChangeContext);
-};
-
-export function RouterChangeProvider({ children }) {
+function RouterChangeContent({ children }) {
   const [isNavigating, setIsNavigating] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -52,4 +48,18 @@ export function RouterChangeProvider({ children }) {
       {children}
     </RouterChangeContext.Provider>
   );
-} 
+}
+
+export function RouterChangeProvider({ children }) {
+  return (
+    <Suspense fallback={null}>
+      <RouterChangeContent>
+        {children}
+      </RouterChangeContent>
+    </Suspense>
+  );
+}
+
+export const useRouterChange = () => {
+  return useContext(RouterChangeContext);
+}; 
