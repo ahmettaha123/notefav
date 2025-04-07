@@ -80,6 +80,12 @@ export default function Navbar() {
           <Link href="/groups" className="text-slate-600 dark:text-slate-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors">
             Gruplar
           </Link>
+          <Link href="/features" className="text-slate-600 dark:text-slate-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors">
+            Özellikler
+          </Link>
+          <Link href="/help" className="text-slate-600 dark:text-slate-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors">
+            Yardım
+          </Link>
         </div>
 
         {/* Right Section (Desktop) */}
@@ -208,6 +214,12 @@ export default function Navbar() {
               </Link>
               <Link href="/groups" className="block py-2 text-slate-700 dark:text-slate-300 hover:text-orange-500 dark:hover:text-orange-400" onClick={closeMenu}>
                 Gruplar
+              </Link>
+              <Link href="/features" className="block py-2 text-slate-700 dark:text-slate-300 hover:text-orange-500 dark:hover:text-orange-400" onClick={closeMenu}>
+                Özellikler
+              </Link>
+              <Link href="/help" className="block py-2 text-slate-700 dark:text-slate-300 hover:text-orange-500 dark:hover:text-orange-400" onClick={closeMenu}>
+                Yardım
               </Link>
             </div>
 
