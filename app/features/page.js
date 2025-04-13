@@ -60,10 +60,10 @@ function FeaturesContent() {
 
   return (
     <div className="max-w-6xl mx-auto px-4">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">NoteFaw Özellikleri</h1>
+      <div className="text-center mb-16">
+        <h1 className="text-4xl font-bold mb-4">NoteFav Özellikleri</h1>
         <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          Fikirlerinizi not alın, hedeflerinizi takip edin ve başkalarıyla işbirliği yapın - NoteFaw'ın kullanımı kolay özellikleriyle tüm bunları ve çok daha fazlasını yapabilirsiniz.
+          Fikirlerinizi not alın, hedeflerinizi takip edin ve başkalarıyla işbirliği yapın - NoteFav'ın kullanımı kolay özellikleriyle tüm bunları ve çok daha fazlasını yapabilirsiniz.
         </p>
       </div>
 
@@ -82,9 +82,9 @@ function FeaturesContent() {
 
       <div className="card mb-16">
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold mb-2">Neden NoteFaw?</h2>
+          <h2 className="text-3xl font-bold mb-2">Neden NoteFav?</h2>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            NoteFaw, fikirlerinizi organize etmek ve hedeflerinize ulaşmak için ihtiyacınız olan tüm araçları tek bir platformda sunar.
+            NoteFav, fikirlerinizi organize etmek ve hedeflerinize ulaşmak için ihtiyacınız olan tüm araçları tek bir platformda sunar.
           </p>
         </div>
 
@@ -92,7 +92,7 @@ function FeaturesContent() {
           <div className="p-4 rounded-lg bg-gray-50 dark:bg-slate-800/50">
             <h3 className="text-xl font-semibold mb-2">Kullanımı Kolay</h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Sezgisel arayüzü ve kullanıcı dostu tasarımı ile NoteFaw'ı kullanmaya hemen başlayabilirsiniz.
+              Sezgisel arayüzü ve kullanıcı dostu tasarımı ile NoteFav'ı kullanmaya hemen başlayabilirsiniz.
             </p>
           </div>
 
@@ -138,9 +138,9 @@ function FeaturesContent() {
 
         <div className="space-y-4">
           <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold mb-2">NoteFaw tamamen ücretsiz mi?</h3>
+            <h3 className="text-xl font-semibold mb-2">NoteFav tamamen ücretsiz mi?</h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Evet, NoteFaw'ın temel özellikleri tamamen ücretsizdir. İlerleyen dönemlerde ileri seviye özellikler için premium planlar sunulabilir, ancak temel özellikler her zaman ücretsiz kalacaktır.
+              Evet, NoteFav'ın temel özellikleri tamamen ücretsizdir. İlerleyen dönemlerde ileri seviye özellikler için premium planlar sunulabilir, ancak temel özellikler her zaman ücretsiz kalacaktır.
             </p>
           </div>
 
@@ -159,9 +159,9 @@ function FeaturesContent() {
           </div>
 
           <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold mb-2">NoteFaw'ı mobil cihazımdan kullanabilir miyim?</h3>
+            <h3 className="text-xl font-semibold mb-2">NoteFav'ı mobil cihazımdan kullanabilir miyim?</h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Evet, NoteFaw tamamen responsive bir tasarıma sahiptir ve her türlü cihazdan (bilgisayar, tablet, akıllı telefon) sorunsuz bir şekilde kullanılabilir. Ayrıca ilerleyen dönemlerde mobil uygulamalar da sunmayı planlıyoruz.
+              Evet, NoteFav tamamen responsive bir tasarıma sahiptir ve her türlü cihazdan (bilgisayar, tablet, akıllı telefon) sorunsuz bir şekilde kullanılabilir. Ayrıca ilerleyen dönemlerde mobil uygulamalar da sunmayı planlıyoruz.
             </p>
           </div>
         </div>

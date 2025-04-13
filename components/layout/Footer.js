@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -9,13 +10,15 @@ export default function Footer() {
     <footer className="bg-slate-100 dark:bg-slate-900 py-8 mt-auto">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="font-bold text-lg mb-4">NoteFaw</h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-4">
-              Fikirlerinizi not alın, hedeflerinizi takip edin, gruplar oluşturun ve başkalarıyla işbirliği yapın.
-            </p>
-            <p className="text-slate-600 dark:text-slate-400 text-sm">
-              &copy; {currentYear} NoteFaw. Tüm hakları saklıdır.
+          <div className="flex-1">
+            <div className="mb-6">
+              <Image src="/logo.png" alt="Logo" width={40} height={40} className="mb-2" />
+              <h3 className="font-bold text-lg mb-4">NoteFav</h3>
+              <p className="text-gray-600 dark:text-gray-400">Notlarınızı, yapılacaklar listenizi ve hedeflerinizi tek bir platformda yönetin.</p>
+            </div>
+            
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              &copy; {currentYear} NoteFav. Tüm hakları saklıdır.
             </p>
           </div>
           

@@ -348,9 +348,9 @@ function SettingsContent() {
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-medium mb-2">Hesap Verileriniz</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-3">
-                    NoteFaw üzerinde sakladığınız tüm verilerinizi indirebilir veya hesabınızı silebilirsiniz.
+                  <h3 className="text-lg font-semibold mb-3">Veri Dışa Aktarma ve Hesap Silme</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    NoteFav üzerinde sakladığınız tüm verilerinizi indirebilir veya hesabınızı silebilirsiniz.
                   </p>
                   <div className="flex gap-3 flex-wrap">
                     <button className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-sm">

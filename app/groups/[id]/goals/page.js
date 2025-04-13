@@ -5,7 +5,68 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '../../../../hooks/useAuth';
 import Link from 'next/link';
 import supabase from '../../../../lib/supabase';
-import { FaArrowLeft, FaPlus, FaTrash, FaEdit, FaCheck, FaTasks, FaLock, FaLockOpen } from 'react-icons/fa';
+import { FaArrowLeft, FaPlus, FaTrash, FaEdit, FaCheck, FaTasks, FaLock, FaLockOpen, FaHourglassHalf, FaClock, FaChevronRight } from 'react-icons/fa';
+
+// Durum renklerini ve ikonlarını belirle
+const statusConfig = {
+  planned: {
+    icon: FaClock,
+    color: 'gray',
+    text: 'Planlandı'
+  },
+  in_progress: {
+    icon: FaHourglassHalf,
+    color: 'blue',
+    text: 'Devam Ediyor'
+  },
+  completed: {
+    icon: FaCheck,
+    color: 'green',
+    text: 'Tamamlandı'
+  },
+  canceled: {
+    icon: FaTrash,
+    color: 'red',
+    text: 'İptal Edildi'
+  }
+};
+
+// Öncelik renkleri
+const priorityColors = {
+  low: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200',
+  medium: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200',
+  high: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200',
+  urgent: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+};
+
+// Öncelik metinleri
+const priorityTexts = {
+  low: 'Düşük',
+  medium: 'Orta',
+  high: 'Yüksek',
+  urgent: 'Acil'
+};
+
+// Tarih formatlama fonksiyonu
+function formatDate(date) {
+  if (!date) return '';
+  const dateObj = new Date(date);
+  return dateObj.toLocaleDateString('tr-TR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+}
+
+// Öncelik rengi al
+function getPriorityColor(priority) {
+  return priorityColors[priority] || priorityColors.medium;
+}
+
+// Öncelik metni al
+function getPriorityText(priority) {
+  return priorityTexts[priority] || priorityTexts.medium;
+}
 
 export default function GroupGoals() {
   const { id } = useParams();
@@ -15,7 +76,7 @@ export default function GroupGoals() {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [myRole, setMyRole] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   
   useEffect(() => {
     if (!user) return;
@@ -58,39 +119,27 @@ export default function GroupGoals() {
           return;
         }
         
-        setMyRole(memberData.role);
+        setUserRole(memberData.role);
         
         // Grup hedeflerini çek
         const { data: goalsData, error: goalsError } = await supabase
           .from('group_goals')
           .select(`
-            id,
-            title,
-            description,
-            status,
-            progress,
-            is_public,
-            target_date,
-            created_at,
-            updated_at,
-            created_by,
-            profiles (
-              username,
-              full_name
-            )
+            *,
+            profiles:creator_id(id, full_name, username, avatar_url)
           `)
           .eq('group_id', id)
           .order('created_at', { ascending: false });
           
         if (goalsError) {
-          console.error("Grup hedefleri çekilemedi:", goalsError);
+          console.error("Hedefler çekilemedi:", goalsError);
           throw new Error("Hedefler yüklenemedi");
         }
         
         setGoals(goalsData || []);
         
       } catch (error) {
-        console.error('Grup hedefleri yüklenirken hata:', error.message);
+        console.error('Veriler yüklenirken hata:', error.message);
         setError(error.message);
       } finally {
         setLoading(false);
@@ -100,12 +149,31 @@ export default function GroupGoals() {
     fetchGroupAndGoals();
   }, [id, user, router]);
   
+  // Hedef durumuna göre renk ve ikon belirle
+  function getStatusDisplay(status) {
+    const config = statusConfig[status] || statusConfig.not_started;
+    const StatusIcon = config.icon;
+    
+    return (
+      <div className={`flex items-center gap-1 text-${config.color}-500`}>
+        <StatusIcon className="inline" />
+        <span>{config.text}</span>
+      </div>
+    );
+  }
+  
+  // Yeni hedef oluşturma sayfasına yönlendir
+  const handleCreateGoal = () => {
+    router.push(`/groups/${id}/goals/new`);
+  };
+  
   const handleDeleteGoal = async (goalId) => {
     if (!confirm('Bu hedefi silmek istediğinize emin misiniz?')) {
       return;
     }
     
     try {
+      setLoading(true);
       const { error } = await supabase
         .from('group_goals')
         .delete()
@@ -113,62 +181,82 @@ export default function GroupGoals() {
         
       if (error) throw error;
       
+      // Grup aktivitesini kaydet
+      await supabase.from('group_activity').insert({
+        group_id: id,
+        user_id: user.id,
+        action: 'delete_goal',
+        entity_type: 'goal',
+        entity_id: goalId,
+        details: { action: 'delete_goal' },
+        created_at: new Date().toISOString()
+      });
+      
       setGoals(goals.filter(goal => goal.id !== goalId));
-      alert('Hedef silindi.');
+      alert('Hedef başarıyla silindi.');
       
     } catch (error) {
       console.error('Hedef silinirken hata:', error);
       alert(`Hedef silinemedi: ${error.message}`);
-    }
-  };
-  
-  const handleTogglePublic = async (goal) => {
-    try {
-      const { error } = await supabase
-        .from('group_goals')
-        .update({ is_public: !goal.is_public })
-        .eq('id', goal.id);
-        
-      if (error) throw error;
-      
-      setGoals(goals.map(g => 
-        g.id === goal.id ? { ...g, is_public: !g.is_public } : g
-      ));
-      
-    } catch (error) {
-      console.error('Görünürlük değiştirilirken hata:', error);
-      alert(`Görünürlük değiştirilemedi: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
   
   const handleUpdateProgress = async (goal, newProgress) => {
     try {
+      setLoading(true);
+      
+      // Yeni durumu belirle
+      let newStatus = goal.status;
+      if (newProgress === 0) {
+        newStatus = 'planned';
+      } else if (newProgress === 100) {
+        newStatus = 'completed';
+      } else if (newProgress > 0) {
+        newStatus = 'in_progress';
+      }
+      
       const { error } = await supabase
         .from('group_goals')
-        .update({ progress: newProgress })
+        .update({ 
+          progress: newProgress,
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', goal.id);
         
       if (error) throw error;
       
-      setGoals(goals.map(g => 
-        g.id === goal.id ? { ...g, progress: newProgress } : g
-      ));
+      // Grup aktivitesini kaydet
+      await supabase.from('group_activity').insert({
+        group_id: id,
+        user_id: user.id,
+        action: 'update_goal',
+        entity_type: 'goal',
+        entity_id: goal.id,
+        details: { 
+          goal_title: goal.title,
+          previous_progress: goal.progress,
+          new_progress: newProgress
+        },
+        created_at: new Date().toISOString()
+      });
       
-      // İlerleme %100 ise durumu 'completed' olarak güncelle
-      if (newProgress === 100) {
-        await supabase
-          .from('group_goals')
-          .update({ status: 'completed' })
-          .eq('id', goal.id);
-          
-        setGoals(goals.map(g => 
-          g.id === goal.id ? { ...g, status: 'completed' } : g
-        ));
-      }
+      // UI'ı güncelle
+      setGoals(goals.map(g => 
+        g.id === goal.id ? { 
+          ...g, 
+          progress: newProgress,
+          status: newStatus
+        } : g
+      ));
       
     } catch (error) {
       console.error('İlerleme güncellenirken hata:', error);
       alert(`İlerleme güncellenemedi: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -203,146 +291,146 @@ export default function GroupGoals() {
             href={`/groups/${id}`}
             className="flex items-center gap-2 text-blue-500 hover:text-blue-700"
           >
-            <FaArrowLeft /> <span>Gruba Geri Dön</span>
+            <FaArrowLeft className="inline" /> <span>Gruba Geri Dön</span>
           </Link>
           
-          <Link 
-            href={`/groups/${id}/goals/new`}
-            className="btn-primary flex items-center gap-2"
+          <button 
+            onClick={handleCreateGoal}
+            className="btn-primary flex items-center justify-center gap-2 px-4 py-2"
           >
-            <FaPlus /> <span>Yeni Hedef Oluştur</span>
-          </Link>
+            <FaPlus className="inline" /> <span>Yeni Hedef</span>
+          </button>
         </div>
         
         <h1 className="text-2xl font-bold mb-2">{group.name} Hedefleri</h1>
         <p className="text-gray-600 dark:text-gray-400 mb-6">Bu gruptaki ortak hedefler</p>
         
-        {/* Hedefler Listesi */}
-        <div className="space-y-6">
-          {goals.length === 0 ? (
-            <p className="text-center py-8 text-gray-600 dark:text-gray-400">
-              Bu grupta henüz hedef oluşturulmamıştır.
-            </p>
-          ) : (
-            goals.map(goal => (
-              <div key={goal.id} className="p-5 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="text-xl font-semibold">{goal.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      <span className="mr-3">Oluşturan: {goal.profiles?.full_name || goal.profiles?.username || 'Bilinmiyor'}</span>
-                      <span>Hedef Tarihi: {new Date(goal.target_date).toLocaleDateString('tr-TR')}</span>
-                    </p>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    {/* Yalnızca hedefi oluşturan veya grup lideri hedefi silebilir ve düzenleyebilir */}
-                    {(goal.created_by === user.id || myRole === 'leader') && (
-                      <>
-                        <button
-                          onClick={() => handleTogglePublic(goal)}
-                          className={`text-sm px-2 py-1 rounded-md ${goal.is_public ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
-                          title={goal.is_public ? 'Herkese Açık' : 'Sadece Grup Üyeleri'}
-                        >
-                          {goal.is_public ? <FaLockOpen /> : <FaLock />}
-                        </button>
-                        
-                        <Link 
-                          href={`/groups/${id}/goals/${goal.id}/edit`}
-                          className="text-blue-500 hover:text-blue-700"
-                          title="Düzenle"
-                        >
-                          <FaEdit />
-                        </Link>
-                        
-                        <button
-                          onClick={() => handleDeleteGoal(goal.id)}
-                          className="text-red-500 hover:text-red-700"
-                          title="Sil"
-                        >
-                          <FaTrash />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-                
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  {goal.description}
-                </p>
-                
-                {/* İlerleme Çubuğu */}
-                <div className="mb-2">
-                  <div className="flex justify-between text-sm mb-1">
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        goal.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                        goal.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {goal.status === 'completed' ? 'Tamamlandı' : 
-                         goal.status === 'in_progress' ? 'Devam Ediyor' : 
-                         'Başlanmadı'}
-                      </span>
-                    </div>
-                    <span>{goal.progress}%</span>
-                  </div>
-                  
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                    <div 
-                      className="bg-blue-600 h-2.5 rounded-full" 
-                      style={{ width: `${goal.progress}%` }}
-                    ></div>
-                  </div>
-                </div>
-                
-                {/* İlerleme Güncelleme Butonları */}
-                {(goal.created_by === user.id || myRole === 'leader') && (
-                  <div className="flex gap-2 mt-4">
-                    <button 
-                      onClick={() => handleUpdateProgress(goal, 0)}
-                      className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-md"
-                    >
-                      0%
-                    </button>
-                    <button 
-                      onClick={() => handleUpdateProgress(goal, 25)}
-                      className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-md"
-                    >
-                      25%
-                    </button>
-                    <button 
-                      onClick={() => handleUpdateProgress(goal, 50)}
-                      className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-md"
-                    >
-                      50%
-                    </button>
-                    <button 
-                      onClick={() => handleUpdateProgress(goal, 75)}
-                      className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-md"
-                    >
-                      75%
-                    </button>
-                    <button 
-                      onClick={() => handleUpdateProgress(goal, 100)}
-                      className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-md"
-                    >
-                      100%
-                    </button>
-                  </div>
-                )}
-                
-                {/* Alt Görevler */}
-                <Link 
-                  href={`/groups/${id}/goals/${goal.id}/tasks`}
-                  className="inline-flex items-center gap-1 text-blue-500 hover:text-blue-700 mt-4"
-                >
-                  <FaTasks /> <span>Alt Görevleri Yönet</span>
-                </Link>
-              </div>
-            ))
-          )}
+        {/* Grup Navigasyonu */}
+        <div className="flex overflow-x-auto gap-2 mb-6 pb-2">
+          <Link 
+            href={`/groups/${id}`}
+            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 whitespace-nowrap"
+          >
+            Ana Sayfa
+          </Link>
+          <Link 
+            href={`/groups/${id}/posts`}
+            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 whitespace-nowrap"
+          >
+            Gönderiler
+          </Link>
+          <Link 
+            href={`/groups/${id}/goals`}
+            className="px-4 py-2 rounded-lg bg-cyan-100 dark:bg-cyan-900 hover:bg-cyan-200 dark:hover:bg-cyan-800 font-medium whitespace-nowrap"
+          >
+            Hedefler
+          </Link>
+          <Link 
+            href={`/groups/${id}/members`}
+            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 whitespace-nowrap"
+          >
+            Üyeler
+          </Link>
+          <Link 
+            href={`/groups/${id}/settings`}
+            className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 whitespace-nowrap"
+          >
+            Ayarlar
+          </Link>
         </div>
+        
+        {/* Hedefler Listesi */}
+        {goals.length === 0 ? (
+          <div className="text-center py-12 border-2 border-dashed rounded-lg">
+            <h3 className="text-lg font-medium mb-2">Henüz hedef bulunmuyor</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              Bu gruba henüz hedef eklenmemiş.
+            </p>
+            
+            {(userRole === 'admin' || userRole === 'creator') && (
+              <Link 
+                href={`/groups/${id}/goals/new`}
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                <FaPlus /> İlk Hedefi Oluştur
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {goals.map((goal) => (
+              <Link
+                key={goal.id}
+                href={`/groups/${id}/goals/${goal.id}`}
+                className="block"
+              >
+                <div className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-1">{goal.title}</h3>
+                      
+                      {goal.description && (
+                        <p className="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                          {goal.description}
+                        </p>
+                      )}
+                      
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                        {getStatusDisplay(goal.status)}
+                        
+                        {goal.due_date && (
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Hedef Tarihi:</span> {formatDate(goal.due_date)}
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">Oluşturan:</span> {goal.profiles?.full_name || 'Bilinmeyen Kullanıcı'}
+                        </div>
+                        
+                        {goal.priority && (
+                          <div className="flex items-center">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${getPriorityColor(goal.priority)}`}>
+                              {getPriorityText(goal.priority)}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {goal.tags && goal.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {goal.tags.slice(0, 3).map((tag, index) => (
+                              <span key={index} className="text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+                                #{tag}
+                              </span>
+                            ))}
+                            {goal.tags.length > 3 && (
+                              <span className="text-xs text-gray-500">+{goal.tags.length - 3}</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      {/* İlerleme Göstergesi */}
+                      <div className="hidden md:flex items-center gap-2">
+                        <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div 
+                            className="bg-cyan-500 h-2 rounded-full" 
+                            style={{ width: `${goal.progress || 0}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium">{goal.progress || 0}%</span>
+                      </div>
+                      
+                      <FaChevronRight className="text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

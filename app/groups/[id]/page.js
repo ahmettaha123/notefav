@@ -125,23 +125,19 @@ export default function GroupPage({ params }) {
             .from('group_notes')
             .select(`
               id,
-              notes (
-                id,
-                title,
-                content,
-                created_at,
-                updated_at
-              ),
-              shared_by,
-              shared_at,
+              title,
+              content,
+              creator_id,
+              created_at,
+              updated_at,
               profiles (
                 username,
                 full_name
               )
             `)
             .eq('group_id', id)
-            .is('notes', 'not.null')
-            .order('shared_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(5);
           
           if (notesError) {
             console.error("Grup notları çekilemedi:", notesError);
@@ -165,10 +161,10 @@ export default function GroupPage({ params }) {
               status,
               progress,
               subtasks,
-              target_date,
+              due_date,
               created_at,
               updated_at,
-              created_by,
+              creator_id,
               profiles (
                 username,
                 full_name
@@ -190,6 +186,8 @@ export default function GroupPage({ params }) {
                   console.error("Subtasks parse hatası:", e);
                   goal.subtasks = [];
                 }
+              } else if (!goal.subtasks) {
+                goal.subtasks = [];
               }
               return goal;
             }) || [];
@@ -481,14 +479,14 @@ export default function GroupPage({ params }) {
           
           <div className="space-y-3">
             {notes.slice(0, 2).map(note => (
-              <Link key={note.id} href={`/notes/${note.notes.id}`}>
+              <Link key={note.id} href={`/notes/${note.id}`}>
                 <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-                  <h3 className="text-lg font-semibold">{note.notes.title}</h3>
+                  <h3 className="text-lg font-semibold">{note.title}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">
-                    {note.notes.content}
+                    {note.content}
                   </p>
                   <div className="text-xs text-gray-500 mt-1">
-                    {new Date(note.shared_at).toLocaleDateString('tr-TR')}
+                    {new Date(note.created_at).toLocaleDateString('tr-TR')}
                   </div>
                 </div>
               </Link>
@@ -499,9 +497,9 @@ export default function GroupPage({ params }) {
                 <p className="text-gray-600 dark:text-gray-400 mb-3">Bu grupta henüz paylaşılan not yok.</p>
                 <Link 
                   href={`/groups/${id}/notes`}
-                  className="btn-primary text-sm flex items-center justify-center gap-1"
+                  className="btn-primary text-sm flex items-center justify-center gap-2 px-4 py-2"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   <span>Not Paylaş</span>
@@ -541,6 +539,11 @@ export default function GroupPage({ params }) {
                     style={{ width: `${goal.progress}%` }}
                   ></div>
                 </div>
+                {goal.due_date && (
+                  <div className="text-xs text-gray-500 mt-2">
+                    Son Tarih: {new Date(goal.due_date).toLocaleDateString('tr-TR')}
+                  </div>
+                )}
               </div>
             ))}
             
@@ -548,10 +551,10 @@ export default function GroupPage({ params }) {
               <div className="text-center py-6">
                 <p className="text-gray-600 dark:text-gray-400 mb-3">Bu grupta henüz hedef oluşturulmamış.</p>
                 <Link 
-                  href={`/groups/${id}/goals/new`}
-                  className="btn-primary text-sm flex items-center justify-center gap-1"
+                  href={`/groups/${id}/goals`}
+                  className="btn-primary text-sm flex items-center justify-center gap-2 px-4 py-2"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   <span>Hedef Oluştur</span>

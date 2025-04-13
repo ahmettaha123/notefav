@@ -20,11 +20,11 @@ function HelpContent() {
   const helpContent = {
     'getting-started': {
       title: 'Başlangıç Rehberi',
-      description: 'NoteFaw uygulamasına hoş geldiniz! Aşağıdaki adımları izleyerek hızlıca başlayın.',
+      description: 'NoteFav uygulamasına hoş geldiniz! Aşağıdaki adımları izleyerek hızlıca başlayın.',
       items: [
         {
           title: 'Hesap Oluşturma',
-          content: 'NoteFaw uygulamasını kullanmaya başlamak için öncelikle bir hesap oluşturmalısınız. Kayıt ol sayfasından e-posta adresiniz ve şifrenizle hızlıca kayıt olabilirsiniz.'
+          content: 'NoteFav uygulamasını kullanmaya başlamak için öncelikle bir hesap oluşturmalısınız. Kayıt ol sayfasından e-posta adresiniz ve şifrenizle hızlıca kayıt olabilirsiniz.'
         },
         {
           title: 'Profilinizi Düzenleme',
@@ -62,7 +62,7 @@ function HelpContent() {
         },
         {
           title: 'Not Formatları',
-          content: 'NoteFaw, notlarınızı zenginleştirmek için Markdown formatını destekler. Başlıklar için #, kalın metin için ** ve italik metin için * kullanabilirsiniz.'
+          content: 'NoteFav, notlarınızı zenginleştirmek için Markdown formatını destekler. Başlıklar için #, kalın metin için ** ve italik metin için * kullanabilirsiniz.'
         },
         {
           title: 'Notları Gruplarla Paylaşma',
@@ -128,19 +128,19 @@ function HelpContent() {
       items: [
         {
           title: 'Destek Talebi Oluşturma',
-          content: 'Teknik bir sorunla karşılaştıysanız veya yardıma ihtiyacınız varsa, destek@notefaw.com adresine e-posta göndererek bir destek talebi oluşturabilirsiniz.'
+          content: 'Teknik bir sorunla karşılaştıysanız veya yardıma ihtiyacınız varsa, destek@notefav.com adresine e-posta göndererek bir destek talebi oluşturabilirsiniz.'
         },
         {
           title: 'Geri Bildirim Gönderme',
-          content: 'Uygulama hakkında görüşlerinizi ve önerilerinizi bildirim@notefaw.com adresine gönderebilirsiniz. Geri bildirimleriniz, uygulamayı geliştirmemize yardımcı olur.'
+          content: 'Uygulama hakkında görüşlerinizi ve önerilerinizi bildirim@notefav.com adresine gönderebilirsiniz. Geri bildirimleriniz, uygulamayı geliştirmemize yardımcı olur.'
         },
         {
           title: 'Sosyal Medya',
-          content: 'Bizi sosyal medyada takip edebilirsiniz: Twitter: @notefaw, Instagram: @notefaw, Facebook: /notefaw'
+          content: 'Bizi sosyal medyada takip edebilirsiniz: Twitter: @notefav, Instagram: @notefav, Facebook: /notefav'
         },
         {
           title: 'İş Birliği',
-          content: 'İş birliği teklifleri için info@notefaw.com adresine e-posta gönderebilirsiniz.'
+          content: 'İş birliği teklifleri için info@notefav.com adresine e-posta gönderebilirsiniz.'
         },
         {
           title: 'SSS',
@@ -157,7 +157,7 @@ function HelpContent() {
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4">Yardım ve Destek</h1>
         <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          NoteFaw uygulamasını kullanırken ihtiyacınız olan tüm bilgiler ve rehberler burada.
+          NoteFav uygulamasını kullanırken ihtiyacınız olan tüm bilgiler ve rehberler burada.
         </p>
       </div>
       
@@ -217,7 +217,7 @@ function HelpContent() {
         <div className="mt-8 text-center">
           <p className="text-gray-600 dark:text-gray-400">Başka sorunuz mu var?</p>
           <a 
-            href="mailto:destek@notefaw.com" 
+            href="mailto:destek@notefav.com" 
             className="inline-block mt-2 text-cyan-600 hover:text-cyan-800 dark:text-cyan-400 dark:hover:text-cyan-300 font-medium"
           >
             Bizimle İletişime Geçin

@@ -149,8 +149,27 @@ export default function GroupNotes() {
       
       alert('Not başarıyla paylaşıldı!');
       
-      // Sayfayı yenile
-      window.location.reload();
+      // Güncel notları çek ve state'i güncelle (sayfayı yeniden yüklemeden)
+      const { data: updatedNotes, error: updateError } = await supabase
+        .from('group_notes')
+        .select(`
+          id,
+          title,
+          content,
+          creator_id,
+          created_at,
+          updated_at,
+          profiles (
+            username,
+            full_name
+          )
+        `)
+        .eq('group_id', id)
+        .order('created_at', { ascending: false });
+        
+      if (!updateError && updatedNotes) {
+        setNotes(updatedNotes);
+      }
       
     } catch (error) {
       console.error('Not paylaşılırken hata:', error);
