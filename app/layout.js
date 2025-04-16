@@ -5,6 +5,7 @@ import Footer from '../components/layout/Footer'
 import AuthProvider from '../context/AuthProvider'
 import { ThemeProvider } from '../context/ThemeProvider'
 import { RouterChangeProvider } from '../context/RouterChangeProvider'
+import { Toaster } from 'react-hot-toast'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }) {
             </RouterChangeProvider>
           </AuthProvider>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   )

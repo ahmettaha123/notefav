@@ -17,7 +17,6 @@ export default function GroupMembers() {
   const [isLeader, setIsLeader] = useState(false);
   const [error, setError] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [searchType, setSearchType] = useState('username'); // 'username' veya 'email'
   const [inviting, setInviting] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState(null);
   const [memberToPromote, setMemberToPromote] = useState(null);
@@ -115,14 +114,20 @@ export default function GroupMembers() {
       setInviting(true);
       setError('');
       
-      // Kullanıcı adı olarak işle
       const searchTerm = searchInput.trim();
       
-      console.log(`Hızlı üye ekleme: ${searchType} ile arama yapılıyor:`, searchTerm);
+      console.log(`Hızlı üye ekleme: E-posta ile arama yapılıyor:`, searchTerm);
+      
+      // Email formatını kontrol et
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(searchTerm)) {
+        setError('Lütfen geçerli bir e-posta adresi girin.');
+        setInviting(false);
+        return;
+      }
       
       // Kendisini eklemeyi önle
-      if (user.email && searchTerm.toLowerCase() === user.email.toLowerCase() ||
-          user.user_metadata?.username && searchTerm.toLowerCase() === user.user_metadata.username.toLowerCase()) {
+      if (user.email && searchTerm.toLowerCase() === user.email.toLowerCase()) {
         setError('Kendinizi tekrar ekleyemezsiniz, zaten gruptasınız.');
         setInviting(false);
         return;
@@ -130,7 +135,7 @@ export default function GroupMembers() {
       
       // Kullanıcının zaten grupta olup olmadığını kontrol et
       const isMemberExists = members.some(m => 
-        m.profiles?.username?.toLowerCase() === searchTerm.toLowerCase()
+        m.profiles?.email?.toLowerCase() === searchTerm.toLowerCase()
       );
       
       if (isMemberExists) {
@@ -141,100 +146,66 @@ export default function GroupMembers() {
       
       let foundUserData = null;
       
-      // E-posta ile arama
-      if (searchType === 'email') {
-        // Not: E-posta arama için server-side desteği olmadığından kısıtlı bir arama yapabiliyoruz
-        // Kullanıcı adı benzerleri ile deneme yapıyoruz
-        const { data: emailData, error: emailError } = await supabase
+      // E-posta araması
+      // E-posta adresine göre kullanıcı ara - DÜZELTME: email alanı doğrudan erişilemiyor
+      const { data: emailData, error: emailError } = await supabase
+        .from('auth')
+        .select('id, email')
+        .eq('email', searchTerm)
+        .limit(1);
+        
+      if (emailError) {
+        console.error('E-posta aramasında hata:', emailError);
+        
+        // Alternatif olarak profiles tablosunda email arama
+        const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, username, full_name')
-          .ilike('username', `%${searchTerm}%`)
+          .select('id, username, full_name, avatar_url')
+          .eq('email', searchTerm)
           .limit(1);
           
-        if (emailError) {
-          console.error('E-posta aramasında hata:', emailError);
-          setError(`Kullanıcı aranırken bir hata oluştu: ${emailError.message}`);
+        if (profilesError) {
+          console.error('Profil tablosunda e-posta aramasında hata:', profilesError);
+          setError(`Kullanıcı aranırken bir hata oluştu.`);
           setInviting(false);
           return;
         }
         
-        if (emailData && emailData.length > 0) {
-          foundUserData = emailData[0];
-          console.log('E-posta benzeri eşleşme bulundu:', foundUserData.username);
+        if (profilesData && profilesData.length > 0) {
+          foundUserData = profilesData[0];
+          console.log('E-posta eşleşmesi bulundu (profiles):', foundUserData);
         } else {
           setError(`"${searchTerm}" e-posta adresine sahip bir kullanıcı bulunamadı.`);
           setInviting(false);
           return;
         }
-      } 
-      // Kullanıcı adı ile arama
-      else {
-        // 1. Tam kullanıcı adı eşleşmesi (öncelikli)
-        const { data: usernameData, error: usernameError } = await supabase
+      } else if (emailData && emailData.length > 0) {
+        // Auth tablosundan kullanıcı bulundu, profil bilgisini al
+        const { data: userData, error: userError } = await supabase
           .from('profiles')
-          .select('id, username, full_name')
-          .eq('username', searchTerm);
-        
-        if (usernameError) {
-          console.error('Kullanıcı adı aramasında hata:', usernameError);
-          setError(`Kullanıcı aranırken bir hata oluştu: ${usernameError.message}`);
+          .select('id, username, full_name, avatar_url')
+          .eq('id', emailData[0].id)
+          .single();
+          
+        if (userError) {
+          console.error('Kullanıcı profili alınamadı:', userError);
+          setError(`Kullanıcı profili alınamadı.`);
           setInviting(false);
           return;
         }
         
-        // 2. Tam ad araması
-        if (!usernameData || usernameData.length === 0) {
-          console.log('Kullanıcı adı ile eşleşme bulunamadı, tam ad araması yapılıyor');
-          
-          const { data: fullNameData, error: fullNameError } = await supabase
-            .from('profiles')
-            .select('id, username, full_name')
-            .eq('full_name', searchTerm);
-          
-          if (fullNameError) {
-            console.error('Tam ad aramasında hata:', fullNameError);
-            setError(`Kullanıcı aranırken bir hata oluştu: ${fullNameError.message}`);
-            setInviting(false);
-            return;
-          }
-          
-          if (!fullNameData || fullNameData.length === 0) {
-            // 3. Son olarak bulanık arama
-            const { data: fuzzyData, error: fuzzyError } = await supabase
-              .from('profiles')
-              .select('id, username, full_name')
-              .or(`username.ilike.%${searchTerm}%,full_name.ilike.%${searchTerm}%`)
-              .limit(1);
-              
-            if (fuzzyError) {
-              console.error('Bulanık aramada hata:', fuzzyError);
-              setError(`Kullanıcı aranırken bir hata oluştu: ${fuzzyError.message}`);
-              setInviting(false);
-              return;
-            }
-            
-            if (!fuzzyData || fuzzyData.length === 0) {
-              setError(`"${searchTerm}" kullanıcı adına sahip bir kullanıcı bulunamadı.`);
-              setInviting(false);
-              return;
-            }
-            
-            foundUserData = fuzzyData[0];
-            console.log('Bulanık eşleşme bulundu:', foundUserData.username);
-          } else {
-            foundUserData = fullNameData[0];
-            console.log('Tam ad eşleşmesi bulundu:', foundUserData.username);
-          }
-        } else {
-          foundUserData = usernameData[0];
-          console.log('Kullanıcı adı eşleşmesi bulundu:', foundUserData.username);
-        }
+        foundUserData = userData;
+        console.log('E-posta eşleşmesi bulundu (auth):', foundUserData);
+      } else {
+        setError(`"${searchTerm}" e-posta adresine sahip bir kullanıcı bulunamadı.`);
+        setInviting(false);
+        return;
       }
       
       if (foundUserData) {
         await addMemberToGroup(foundUserData);
       } else {
-        setError(`Kullanıcı bulunamadı. Lütfen tam kullanıcı adını girdiğinizden emin olun.`);
+        setError(`Kullanıcı bulunamadı. Lütfen geçerli bir e-posta adresi girdiğinizden emin olun.`);
       }
       
     } catch (error) {
@@ -436,49 +407,17 @@ export default function GroupMembers() {
             <h2 className="text-md font-semibold mb-3">Hızlı Üye Ekle</h2>
             
             <form onSubmit={handleInviteMember} className="flex flex-col">
-              <div className="flex gap-4 mb-3">
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="searchByUsername"
-                    name="searchType"
-                    value="username"
-                    checked={searchType === 'username'}
-                    onChange={() => setSearchType('username')}
-                    className="mr-2"
-                  />
-                  <label htmlFor="searchByUsername" className="text-sm font-medium">
-                    Kullanıcı Adı
-                  </label>
-                </div>
-                
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="searchByEmail"
-                    name="searchType"
-                    value="email"
-                    checked={searchType === 'email'}
-                    onChange={() => setSearchType('email')}
-                    className="mr-2"
-                  />
-                  <label htmlFor="searchByEmail" className="text-sm font-medium">
-                    E-posta
-                  </label>
-                </div>
-              </div>
-              
-              <div className="flex mb-2">
+              <div className="flex flex-col sm:flex-row mb-2">
                 <input
-                  type="text"
-                  placeholder={searchType === 'username' ? "Kullanıcı adı..." : "E-posta adresi..."}
+                  type="email"
+                  placeholder="E-posta adresi..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="flex-1 px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                  className="flex-1 px-3 py-2 border rounded-md sm:rounded-r-none sm:rounded-l-md focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white mb-2 sm:mb-0"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md sm:rounded-l-none sm:rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                   disabled={inviting || !searchInput.trim()}
                 >
                   <FaUserPlus className="inline" /> <span>{inviting ? 'Ekleniyor...' : 'Ekle'}</span>
@@ -492,9 +431,7 @@ export default function GroupMembers() {
               )}
               
               <p className="text-xs text-gray-500 mt-2">
-                Not: {searchType === 'username' 
-                  ? "Eklemek istediğiniz kullanıcının tam kullanıcı adını girin." 
-                  : "E-posta ile kullanıcı aramak deneysel bir özelliktir ve tam sonuç vermeyebilir."}
+                Kullanıcının tam e-posta adresini girin. Sadece sistemde kayıtlı kullanıcılar eklenebilir.
               </p>
             </form>
           </div>
@@ -507,7 +444,7 @@ export default function GroupMembers() {
             </p>
           ) : (
             members.map(member => (
-              <div key={member.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-md">
+              <div key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-md gap-3">
                 <div className="flex items-center">
                   <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-3">
                     {member.profiles?.full_name ?
@@ -521,7 +458,7 @@ export default function GroupMembers() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 ml-13 sm:ml-0">
                   <span className={`text-xs px-2 py-1 rounded-full ${
                     member.role === 'leader' 
                       ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' 
@@ -539,7 +476,7 @@ export default function GroupMembers() {
                         title="Lider Yap"
                       >
                         <FaCrown className="inline" />
-                        <span>Lider Yap</span>
+                        <span className="hidden sm:inline">Lider Yap</span>
                       </button>
                       <button
                         onClick={() => handleRemoveMember(member.id, member.user_id)}
@@ -548,7 +485,7 @@ export default function GroupMembers() {
                         title="Gruptan Çıkar"
                       >
                         <FaUserTimes className="inline" />
-                        <span>Çıkar</span>
+                        <span className="hidden sm:inline">Çıkar</span>
                       </button>
                     </>
                   )}

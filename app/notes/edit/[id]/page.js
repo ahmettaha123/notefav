@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../hooks/useAuth';
 import Link from 'next/link';
 import supabase from '../../../../lib/supabase';
+import { toast } from 'react-hot-toast';
+// import { improveText } from '../../../../lib/gemini';
 // Resim yükleme yardımcı kodlarını kaldırdık
 // import { uploadImage, insertImageToText } from '../../../../utils/imageUpload';
 
@@ -24,6 +26,9 @@ export default function EditNote({ params }) {
   const tagInputRef = useRef(null);
   const textareaRef = useRef(null);
   // const fileInputRef = useRef(null);
+  const [isImproving, setIsImproving] = useState(false);
+  const [improvedContent, setImprovedContent] = useState('');
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -165,6 +170,103 @@ export default function EditNote({ params }) {
     }
   };
 
+  const handleImproveWithAI = () => {
+    try {
+      setIsImproving(true);
+      setTimeout(() => {
+        const result = improveTextLocally(content);
+        setImprovedContent(result);
+        setShowConfirmation(true);
+        setIsImproving(false);
+      }, 500);
+    } catch (error) {
+      console.error('Metin geliştirme hatası:', error);
+      toast.error('Metin geliştirilemedi');
+      setIsImproving(false);
+    }
+  };
+
+  const confirmImprovement = () => {
+    setContent(improvedContent);
+    setShowConfirmation(false);
+    toast.success('Metin başarıyla geliştirildi');
+  };
+
+  const cancelImprovement = () => {
+    setImprovedContent('');
+    setShowConfirmation(false);
+  };
+
+  // Lokal metin geliştirme fonksiyonu
+  const improveTextLocally = (text) => {
+    if (!text || typeof text !== 'string') return text;
+    
+    let improved = text;
+    
+    // Satır satır işle
+    const lines = improved.split('\n');
+    const improvedLines = lines.map(line => {
+      // Boş satırları koru
+      if (line.trim() === '') return line;
+      
+      // Markdown başlıklarını koru ve düzelt
+      if (line.trim().startsWith('#')) {
+        // Başlıklarda # işaretinden sonra boşluk ekle
+        return line.replace(/^(#+)([^\s])/g, '$1 $2');
+      }
+      
+      // Madde işaretlerini koru
+      if (line.trim().match(/^[\*\-\+]/) || line.trim().match(/^\d+\./)) {
+        // Madde işaretinden sonra boşluk ekle
+        const processed = line.replace(/^([\*\-\+]|\d+\.)([^\s])/g, '$1 $2');
+        
+        // Madde içindeki metni geliştir
+        return processText(processed);
+      }
+      
+      // Normal metin satırı
+      return processText(line);
+    });
+    
+    // Satırları birleştir
+    improved = improvedLines.join('\n');
+    
+    return improved;
+  };
+  
+  // Tek bir metin satırını işle (paragraf veya madde)
+  const processText = (line) => {
+    // Cümle başındaki ilk harfi büyüt
+    let processed = line.replace(/(^\s*|[.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+    
+    // Noktalama işaretlerinden sonra boşluk ekle
+    processed = processed.replace(/([.!?,;:])([^\s\d])/g, '$1 $2');
+    
+    // Noktalama işaretlerinden önceki boşlukları kaldır
+    processed = processed.replace(/\s+([.,;:!?])/g, '$1');
+    
+    // Çift boşlukları tek boşluğa çevir
+    processed = processed.replace(/\s{2,}/g, ' ');
+    
+    // Türkçe karakterlerle ilgili düzeltmeler
+    const turkishReplacements = {
+      'i̇': 'i', // Noktalı i sorunu
+      'İ': 'İ',
+      'ı': 'ı',
+      'ş': 'ş',
+      'ğ': 'ğ',
+      'ç': 'ç',
+      'ö': 'ö',
+      'ü': 'ü'
+    };
+    
+    Object.entries(turkishReplacements).forEach(([search, replace]) => {
+      processed = processed.replace(new RegExp(search, 'g'), replace);
+    });
+    
+    return processed;
+  };
+
   // Resim yükleme fonksiyonlarını kaldırdık
   // const handleImageUpload = async () => { ... }
   // const onFileChange = async (e) => { ... }
@@ -199,6 +301,34 @@ export default function EditNote({ params }) {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-lg max-w-2xl w-full mx-4">
+            <h3 className="text-xl font-bold mb-2">Metin Geliştirme Sonucu</h3>
+            <p className="mb-4">Metniniz aşağıdaki gibi geliştirildi. Onaylıyor musunuz?</p>
+            
+            <div className="bg-gray-100 dark:bg-slate-700 p-4 rounded-md mb-4 max-h-60 overflow-y-auto">
+              {improvedContent}
+            </div>
+            
+            <div className="flex gap-2 justify-end">
+              <button 
+                onClick={cancelImprovement}
+                className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-4 py-2 rounded-md"
+              >
+                İptal
+              </button>
+              <button 
+                onClick={confirmImprovement}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md"
+              >
+                Onayla ve Uygula
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Not Düzenle</h1>
         <div className="flex gap-2">
@@ -208,6 +338,13 @@ export default function EditNote({ params }) {
           >
             İptal
           </Link>
+          <button 
+            onClick={handleImproveWithAI}
+            disabled={isImproving || !content}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
+          >
+            {isImproving ? 'Geliştiriliyor...' : 'Metin Geliştir'}
+          </button>
           <button 
             onClick={handleUpdateNote}
             disabled={saving}
