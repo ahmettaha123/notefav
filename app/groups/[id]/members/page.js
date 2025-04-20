@@ -25,6 +25,7 @@ export default function GroupMembers() {
   const [myRole, setMyRole] = useState(null);
   const [isRemovingMember, setIsRemovingMember] = useState(false);
   const [isPromotingMember, setIsPromotingMember] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     async function fetchGroupAndMembers() {
@@ -343,6 +344,43 @@ export default function GroupMembers() {
     }
   };
 
+  // Rol değiştirme fonksiyonu
+  const handleRoleChange = async (memberId, userId, newRole) => {
+    if (!confirm(`Bu kullanıcının rolünü "${newRole}" olarak değiştirmek istediğinize emin misiniz?`)) {
+      return;
+    }
+    
+    setUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('group_members')
+        .update({ role: newRole })
+        .eq('id', memberId);
+        
+      if (error) throw error;
+      
+      // Başarılı güncellemeden sonra üyeleri yenile
+      fetchGroupAndMembers();
+      
+      // Grup aktivitesi ekle
+      await supabase.from('group_activity').insert({
+        group_id: id,
+        user_id: user.id,
+        action: 'update_role',
+        entity_type: 'member',
+        entity_id: userId,
+        details: { new_role: newRole },
+        created_at: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Rol değiştirme hatası:', error);
+      setError('Rol değiştirilemedi');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="container mx-auto py-8 px-4">
@@ -443,55 +481,96 @@ export default function GroupMembers() {
               Bu grupta henüz üye bulunmamaktadır.
             </p>
           ) : (
-            members.map(member => (
-              <div key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-md gap-3">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-3">
-                    {member.profiles?.full_name ?
-                      member.profiles.full_name.charAt(0).toUpperCase() :
-                      (member.profiles?.username ?
-                        member.profiles.username.charAt(0).toUpperCase() : '?')}
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+              {members.map(member => (
+                <li key={member.id} className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="avatar">
+                      {member.profiles?.avatar_url ? (
+                        <img 
+                          src={member.profiles.avatar_url} 
+                          alt={member.profiles.username || 'Kullanıcı'} 
+                          className="w-10 h-10 rounded-full"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                          <span className="text-gray-500 dark:text-gray-400">
+                            {(member.profiles?.username || 'K')[0].toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-medium">
+                        {member.profiles?.full_name || member.profiles?.username || 'Kullanıcı'}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        @{member.profiles?.username || 'kullanici'}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-medium">{member.profiles?.full_name || member.profiles?.username || 'Bilinmeyen Kullanıcı'}</div>
-                    <div className="text-sm text-gray-500">{member.profiles?.username || `ID: ${member.user_id.substring(0, 8)}...`}</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 ml-13 sm:ml-0">
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    member.role === 'leader' 
-                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' 
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
-                  }`}>
-                    {member.role === 'leader' ? 'Lider' : 'Üye'}
-                  </span>
                   
-                  {myRole === 'leader' && member.user_id !== user.id && (
-                    <>
-                      <button
-                        onClick={() => handlePromoteToLeader(member.id, member.user_id)}
-                        disabled={isPromotingMember}
-                        className="text-yellow-500 hover:text-yellow-700 disabled:opacity-50 flex items-center justify-center gap-1"
-                        title="Lider Yap"
-                      >
-                        <FaCrown className="inline" />
-                        <span className="hidden sm:inline">Lider Yap</span>
-                      </button>
+                  <div className="flex items-center gap-2 ml-auto">
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      member.role === 'leader' 
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' 
+                        : member.role === 'admin'
+                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100'
+                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
+                    }`}>
+                      {member.role === 'leader' ? 'Lider' : member.role === 'admin' ? 'Admin' : 'Üye'}
+                    </span>
+                    
+                    {/* Grup lideri, diğer üyelerin rollerini değiştirebilir */}
+                    {myRole === 'leader' && member.user_id !== user.id && (
+                      <div className="dropdown">
+                        <button className="btn-outline btn-sm">
+                          Rol Değiştir
+                        </button>
+                        <div className="dropdown-content">
+                          {member.role !== 'leader' && (
+                            <button
+                              onClick={() => handleRoleChange(member.id, member.user_id, 'leader')}
+                              className="dropdown-item"
+                            >
+                              Lider Yap
+                            </button>
+                          )}
+                          {member.role !== 'admin' && (
+                            <button
+                              onClick={() => handleRoleChange(member.id, member.user_id, 'admin')}
+                              className="dropdown-item"
+                            >
+                              Admin Yap
+                            </button>
+                          )}
+                          {member.role !== 'member' && (
+                            <button
+                              onClick={() => handleRoleChange(member.id, member.user_id, 'member')}
+                              className="dropdown-item"
+                            >
+                              Üye Yap
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Grup lideri, diğer üyeleri gruptan çıkarabilir */}
+                    {myRole === 'leader' && member.user_id !== user.id && (
                       <button
                         onClick={() => handleRemoveMember(member.id, member.user_id)}
-                        disabled={isRemovingMember}
-                        className="text-red-500 hover:text-red-700 disabled:opacity-50 flex items-center justify-center gap-1"
-                        title="Gruptan Çıkar"
+                        className="btn-error btn-sm"
+                        disabled={updating}
                       >
-                        <FaUserTimes className="inline" />
-                        <span className="hidden sm:inline">Çıkar</span>
+                        Çıkar
                       </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       </div>

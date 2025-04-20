@@ -7,7 +7,7 @@ Grup sisteminde karşılaşılan sorunlar için aşağıdaki düzeltmeler yapıl
 ### 1. Veritabanı Politikaları (RLS)
 
 - **Sonsuz Tekrar Hatası (Infinite Recursion)**: RLS politikalarındaki döngüsel referanslar düzeltildi.
-- **Rol Kısıtlaması**: Group_members tablosundaki rol değeri 'leader' veya 'member' olarak sınırlandırıldı.
+- **Rol Kısıtlaması**: Group_members tablosundaki rol değeri 'leader', 'admin' veya 'member' olarak sınırlandırıldı.
 - **Varsayılan Değer**: Rol için varsayılan değer 'viewer' yerine 'member' olarak değiştirildi.
 - **Politika Ayrımı**: Grup lideri eklemek için ayrı, diğer üyeleri eklemek için ayrı politikalar oluşturuldu.
 
@@ -25,6 +25,14 @@ Grup sisteminde karşılaşılan sorunlar için aşağıdaki düzeltmeler yapıl
 - **Hata İşleme**: Üye eklenemese bile grup oluşturmanın tamamlanması sağlandı.
 - **Kullanıcı Deneyimi**: Grubun önce üyesiz oluşturulup daha sonra üye eklenebilmesi sağlandı.
 
+### 4. Rol Sistemi Güncellemesi
+
+- **Yeni Admin Rolü**: Grup üyeleri arasında 'leader', 'admin' ve 'member' olarak üç farklı rol tanımlandı.
+- **Rol Yetkileri**:
+  - **Lider**: Tüm grup işlemlerini yapabilir (not/hedef ekleme, silme, üye davet etme, düzenleme).
+  - **Admin**: Not ve hedef ekleyebilir, düzenleyebilir ve silebilir, ancak grup ayarlarını değiştiremez veya üye davet edemez.
+  - **Üye**: Sadece grup içeriğini görüntüleyebilir, not veya hedef ekleyemez.
+
 ## Nasıl Kullanılır?
 
 ### Yeni Grup Oluşturma
@@ -34,12 +42,13 @@ Grup sisteminde karşılaşılan sorunlar için aşağıdaki düzeltmeler yapıl
 3. Hemen üye eklemek istemiyorsanız "Şimdilik üye eklemeyi atla" seçeneğini işaretleyin.
 4. "Grup Oluştur" düğmesine tıklayın.
 
-### Üye Ekleme
+### Üye Ekleme ve Rol Atama
 
 1. Grup detay sayfasında "Üyeler" sekmesine gidin.
 2. "Üye Ekle" düğmesine tıklayın.
 3. Kullanıcı adını girin ve "Ekle" düğmesine tıklayın.
-4. Not: E-posta ile kullanıcı araması şu anda devre dışıdır.
+4. Üye eklendikten sonra, üyenin yanındaki rol düğmesine tıklayarak rolünü değiştirebilirsiniz (Lider olarak).
+5. Admin rolü için, üyeyi önce eklemeniz ve ardından rolünü "admin" olarak güncellemeniz gerekir.
 
 ### Veritabanı Düzeltmeleri
 

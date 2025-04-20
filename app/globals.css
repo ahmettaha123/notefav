@@ -4,49 +4,74 @@
 
 :root {
   /* Ana tema renkleri - Aydınlık mod */
-  --primary: #f97316; /* Turuncu */
-  --primary-dark: #ea580c; /* Koyu turuncu */
-  --primary-light: #fb923c; /* Açık turuncu */
-  --secondary: #64748b; /* Griye çalan mavi */
-  --accent: #f59e0b; /* Sarı-turuncu aksan rengi */
-  --background: #f8fafc; /* Çok açık gri arkaplan */
-  --foreground: #1e293b; /* Koyu lacivert-gri metin */
-  --card-bg: #ffffff; /* Kart arkaplanı */
-  --card-border: #e2e8f0; /* Kart kenarlık */
-  --muted: #94a3b8; /* Soluk metin rengi */
-  --muted-bg: #f1f5f9; /* Soluk arkaplan rengi */
-  --success: #10b981; /* Başarı rengi */
-  --warning: #f59e0b; /* Uyarı rengi */
-  --error: #ef4444; /* Hata rengi */
-  --primary-color: #f97316;
-  --primary-dark: #ea580c;
-  --primary-light: #fdba74;
-  --secondary-color: #f59e0b;
-  --secondary-dark: #d97706;
-  --secondary-light: #fcd34d;
+  --primary: 59, 130, 246;
+  --primary-dark: 37, 99, 235;
+  --primary-light: 96, 165, 250;
+  --secondary: 16, 185, 129;
+  --accent: 251, 113, 133;
+  --background: 226, 232, 240;
+  --foreground: 15, 23, 42;
+  --card-bg: 241, 245, 249;
+  --card-border: 203, 213, 225;
+  --muted: 94, 115, 159;
+  --muted-bg: 226, 232, 240;
+  --success: 16, 185, 129;
+  --warning: 245, 158, 11;
+  --error: 239, 68, 68;
+  --primary-color: 59, 130, 246;
+  --primary-dark: 37, 99, 235;
+  --primary-light: 96, 165, 250;
+  --secondary-color: 16, 185, 129;
+  --secondary-dark: 5, 150, 105;
+  --secondary-light: 52, 211, 153;
+  --foreground-rgb: 15, 23, 42;
+  --background-rgb: 226, 232, 240;
+  --background-start-rgb: 226, 232, 240;
+  --background-end-rgb: 203, 213, 225;
+  --button-text: 255, 255, 255;
+  --button-disabled: 203, 213, 225;
+  --input-border: 209, 213, 219;
+  --input-bg: 249, 250, 251;
+  --info: 59, 130, 246;
+  /* Grid arka plan renkleri */
+  --grid-color: rgba(148, 163, 184, 0.3); /* Açık grid çizgileri - düşük opacity */
+  --grid-color-dark: rgba(51, 65, 85, 0.2); /* Karanlık mod grid çizgileri - düşük opacity */
 }
 
 .dark {
   /* Ana tema renkleri - Karanlık mod */
-  --primary: #f97316;
-  --primary-dark: #c2410c;
-  --primary-light: #fdba74;
-  --secondary: #475569;
-  --accent: #fbbf24;
-  --background: #0f172a; /* Koyu lacivert arkaplan */
-  --foreground: #e2e8f0; /* Açık gri metin */
-  --card-bg: #1e293b; /* Kart arkaplanı */
-  --card-border: #334155; /* Kart kenarlık */
-  --muted: #64748b; /* Soluk metin rengi */
-  --muted-bg: #1e293b; /* Soluk arkaplan rengi */
-  --success: #059669;
-  --warning: #d97706;
-  --error: #dc2626;
+  --primary: 37, 99, 235;
+  --primary-dark: 15, 23, 42;
+  --primary-light: 96, 165, 250;
+  --secondary: 47, 55, 69;
+  --accent: 244, 63, 94;
+  --background: 15, 23, 42;
+  --foreground: 229, 231, 235;
+  --card-bg: 30, 41, 59;
+  --card-border: 51, 65, 85;
+  --muted: 64, 74, 8b;
+  --muted-bg: 15, 23, 42;
+  --success: 5, 150, 105;
+  --warning: 245, 158, 11;
+  --error: 239, 68, 68;
+  --foreground-rgb: 229, 231, 235;
+  --background-rgb: 15, 23, 42;
+  --input-border: 75, 85, 99;
+  --input-bg: 17, 24, 39;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  background-image: linear-gradient(var(--grid-color) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 150px 150px;
+  background-position: 0 0;
+}
+
+.dark body {
+  background-image: linear-gradient(var(--grid-color-dark) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--grid-color-dark) 1px, transparent 1px);
 }
 
 /* Markdown içeriği için taşma kontrolleri */
@@ -106,20 +131,21 @@ body {
   hyphens: auto !important;
 }
 
+/* Buton stilleri - Basit ve Temiz */
 .btn-primary {
-  @apply bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold py-2 px-6 rounded-md
-    shadow-md hover:shadow-lg transition-all duration-300 inline-block transform hover:-translate-y-1;
+  @apply bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded 
+    shadow transition-all duration-200;
 }
 
 .btn-secondary {
-  @apply border border-slate-300 dark:border-slate-700 hover:border-orange-500 dark:hover:border-orange-500
-    text-slate-800 dark:text-slate-200 font-semibold py-2 px-6 rounded-md transition-all duration-300
-    hover:shadow-md transform hover:-translate-y-1;
+  @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 
+    font-medium py-2 px-4 rounded shadow hover:border-orange-500 dark:hover:border-orange-500 
+    transition-all duration-200;
 }
 
 .btn-outline {
-  @apply border-2 border-orange-500 text-orange-500 font-semibold py-2 px-6 rounded-md
-    transition-all duration-300 hover:bg-orange-500 hover:text-white hover:shadow-md;
+  @apply border border-orange-500 text-orange-500 font-medium py-2 px-4 rounded
+    transition-all duration-200 hover:bg-orange-500 hover:text-white;
 }
 
 .card {
@@ -134,24 +160,11 @@ body {
 /* Form input stilleri */
 @layer components {
   input, textarea, select {
-    @apply bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-600 rounded-md;
+    @apply bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-100 border border-slate-200 dark:border-slate-600 rounded;
   }
   
   input::placeholder, textarea::placeholder {
     @apply text-slate-400 dark:text-slate-500;
-  }
-
-  /* Modern buton hover efektleri */
-  .btn-primary, .btn-secondary {
-    @apply relative overflow-hidden;
-  }
-  
-  .btn-primary::after, .btn-secondary::after {
-    @apply content-[''] absolute left-0 top-0 h-full w-0 bg-white bg-opacity-20 transform skew-x-12 transition-all duration-300 ease-out;
-  }
-  
-  .btn-primary:hover::after, .btn-secondary:hover::after {
-    @apply w-full;
   }
 
   .container {
@@ -159,7 +172,7 @@ body {
   }
   
   .form-input {
-    @apply w-full border border-gray-300 dark:border-gray-700 rounded-md py-2 px-4 
+    @apply w-full border border-gray-300 dark:border-gray-700 rounded py-2 px-4 
       focus:ring-2 focus:ring-orange-500 focus:border-orange-500 dark:bg-slate-800 
       dark:text-white outline-none transition-all duration-300;
   }
@@ -198,26 +211,44 @@ body {
   
   .link {
     @apply text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300 
-      transition-colors duration-300 underline-offset-2 hover:underline;
+      transition-colors duration-200 hover:underline;
+  }
+  
+  /* Not kaydet buton grubu */
+  .note-actions {
+    @apply flex space-x-2 mt-4;
+  }
+  
+  .note-actions button {
+    @apply px-4 py-2 rounded font-medium;
+  }
+  
+  .save-note-btn {
+    @apply bg-orange-500 hover:bg-orange-600 text-white transition-colors duration-200;
+  }
+  
+  .cancel-note-btn {
+    @apply bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 
+      text-slate-800 dark:text-slate-200 transition-colors duration-200;
   }
 }
 
-/* Tema geçişi animasyonu */
+/* Tema geçiş animasyonu */
 body {
   @apply transition-colors duration-300;
 }
 
-/* ReactQuill Editör Stilleri - Turuncu tema uyumlu */
+/* ReactQuill Editör Stilleri */
 .ql-toolbar {
-  @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-t-md !important;
+  @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-t !important;
 }
 
 .ql-container {
-  @apply bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 border-t-0 rounded-b-md !important;
+  @apply bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 border-t-0 rounded-b !important;
 }
 
 .ql-editor {
-  @apply text-slate-900 dark:text-slate-100 min-h-[200px] !important;
+  @apply text-slate-700 dark:text-slate-100 min-h-[200px] !important;
 }
 
 .ql-picker-label {
@@ -225,7 +256,7 @@ body {
 }
 
 .ql-picker-options {
-  @apply bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 !important;
+  @apply bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-100 !important;
 }
 
 .ql-snow .ql-stroke {
@@ -313,11 +344,15 @@ body {
   }
   
   body {
-    @apply bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300;
+    @apply bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-100;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
+    @apply font-bold text-slate-800 dark:text-slate-100;
+  }
+  
+  p {
+    @apply text-slate-700 dark:text-slate-300;
   }
   
   ::selection {
@@ -342,17 +377,99 @@ body {
   }
 }
 
+/* Temel animasyonlar */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
+  from { transform: translateY(10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
+}
+
+/* Minimal arkaplan animasyonları */
+@keyframes float-mini {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-float-mini {
+  animation: float-mini 8s ease-in-out infinite;
+}
+
+/* Mobil uyumluluk düzeltmeleri */
+@media (max-width: 640px) {
+  body {
+    background-size: 150px 150px; /* Mobilde daha küçük grid boyutu */
+  }
+  
+  /* Mobil ekranlarda görüntü eşitsizliğini düzeltmek için */
+  .card, .rounded-lg {
+    @apply rounded;
+  }
+  
+  .container {
+    @apply px-3;
+  }
+  
+  /* Mobil cihazlarda not ekleme bileşeni düzeltmeleri */
+  .note-item, .note-card, .panel {
+    @apply w-full mx-auto my-2;
+    min-height: auto !important;
+    aspect-ratio: auto !important;
+  }
+  
+  /* Mobil için buton boyutları */
+  .btn-primary, .btn-secondary, .btn-outline {
+    @apply py-2 px-3 text-sm;
+  }
+}
+
+/* Renkli paneller için stil */
+.color-panel {
+  @apply rounded-lg p-4 shadow-sm mb-3;
+}
+
+.color-panel.blue {
+  @apply bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 text-blue-800 dark:text-blue-100;
+}
+
+.color-panel.purple {
+  @apply bg-purple-50 dark:bg-purple-950 border border-purple-200 dark:border-purple-900 text-purple-800 dark:text-purple-100;
+}
+
+.color-panel.orange {
+  @apply bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-900 text-orange-800 dark:text-orange-100;
+}
+
+/* Not düzenleme ekranı için eşit boyutlandırma */
+.note-editor-container {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: calc(100vh - 80px);
+}
+
+.note-content-area {
+  @apply w-full overflow-auto;
+  min-height: 300px;
+}
+
+/* Ana sayfa geliştirmeleri */
+.home-hero {
+  @apply py-12 md:py-20 bg-white dark:bg-slate-800 rounded-lg shadow-sm mb-8;
+}
+
+.home-features {
+  @apply bg-slate-50 dark:bg-slate-800/50 rounded-lg shadow-sm;
+}
+
+.feature-icon {
+  @apply bg-slate-100 dark:bg-slate-700 p-3 rounded-lg text-orange-500;
 }

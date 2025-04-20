@@ -11,12 +11,60 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'NoteFav - Fikirlerini Not Al, Hedeflerini Gerçekleştir!',
-  description: 'Fikirlerinizi düzenleyin, hedeflerinizi planlayın ve projelerinizi takip edin.',
+  description: 'NoteFav ile notlarınızı düzenleyin, hedeflerinizi planlayın ve projelerinizi takip edin. Ücretsiz not alma, görev takibi ve hatırlatıcı uygulaması.',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  keywords: 'not alma, notlar, görev takibi, hedef planlama, notfav, not tutma uygulaması, ücretsiz not uygulaması, online not defteri, hatırlatıcı, ajanda, yapılacaklar listesi',
+  authors: [{ name: 'NoteFav' }],
+  openGraph: {
+    title: 'NoteFav - Fikirlerini Not Al, Hedeflerini Gerçekleştir!',
+    description: 'NoteFav ile notlarınızı düzenleyin, hedeflerinizi planlayın ve projelerinizi takip edin. Ücretsiz not alma, görev takibi ve hatırlatıcı uygulaması.',
+    url: 'https://notefav.com',
+    siteName: 'NoteFav',
+    images: [
+      {
+        url: '/images/notefav-og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'NoteFav Logo',
+      }
+    ],
+    locale: 'tr_TR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NoteFav - Fikirlerini Not Al, Hedeflerini Gerçekleştir!',
+    description: 'NoteFav ile notlarınızı düzenleyin, hedeflerinizi planlayın ve projelerinizi takip edin.',
+    images: ['/images/notefav-twitter-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: 'https://notefav.com',
+    languages: {
+      'tr-TR': 'https://notefav.com',
+    },
+  },
+  verification: {
+    google: 'google-site-verification-code', // Google Search Console doğrulama kodu eklenecek
+  },
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="tr" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
+      </head>
       <body className={`${inter.className} min-h-screen flex flex-col`}>
         <ThemeProvider>
           <AuthProvider>

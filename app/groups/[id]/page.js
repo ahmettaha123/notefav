@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../hooks/useAuth';
 import Link from 'next/link';
 import supabase from '../../../lib/supabase';
+import { FaPlus, FaUserPlus } from 'react-icons/fa';
 
 export default function GroupPage({ params }) {
   const { id } = params;
@@ -20,6 +21,8 @@ export default function GroupPage({ params }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isMember, setIsMember] = useState(true);
   const [myRole, setMyRole] = useState(null);
+  const [showAddNoteModal, setShowAddNoteModal] = useState(false);
+  const [showAddGoalModal, setShowAddGoalModal] = useState(false);
 
   useEffect(() => {
     async function fetchGroupData() {
@@ -564,6 +567,41 @@ export default function GroupPage({ params }) {
           </div>
         </div>
       </div>
+
+      {/* Not ve Hedef Ekleme Butonları */}
+      {isMember && (
+        <div className="flex flex-wrap gap-3 mt-4 mb-8">
+          {/* Not ekleme butonu - sadece lider ve admin görebilir */}
+          {myRole && (myRole === 'leader' || myRole === 'admin') && (
+            <button
+              onClick={() => setShowAddNoteModal(true)}
+              className="flex items-center gap-2 btn-secondary"
+            >
+              <FaPlus size={14} /> Not Paylaş
+            </button>
+          )}
+          
+          {/* Hedef ekleme butonu - sadece lider ve admin görebilir */}
+          {myRole && (myRole === 'leader' || myRole === 'admin') && (
+            <button
+              onClick={() => setShowAddGoalModal(true)}
+              className="flex items-center gap-2 btn-primary"
+            >
+              <FaPlus size={14} /> Hedef Ekle
+            </button>
+          )}
+          
+          {/* Üye davet et butonu - sadece lider görebilir */}
+          {myRole === 'leader' && (
+            <button
+              onClick={() => router.push(`/groups/${id}/members`)}
+              className="flex items-center gap-2 btn-outline"
+            >
+              <FaUserPlus size={14} /> Üye Davet Et
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Grup Silme Onay Modal */}
       {isDeleting && (

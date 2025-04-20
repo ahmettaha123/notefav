@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
 import supabase from '../../lib/supabase';
 import { useRouterChange } from '../../context/RouterChangeProvider';
+import { PlusIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, FlagIcon, CheckCircleIcon, StarIcon } from '@heroicons/react/24/outline';
+import { formatDistanceToNow } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 // LoadingOverlay artık global olarak kullanılacak, bu nedenle kaldırıyoruz
 // Ancak sayfaya özel loading durumları için basit bir spinner ekleyelim
@@ -17,6 +21,33 @@ const Spinner = () => (
   </div>
 );
 
+// İstatistik kartı bileşeni
+const StatCard = ({ title, value, change, changeType, icon }) => (
+  <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm dark:shadow-none dark:border dark:border-slate-800">
+    <div className="flex items-center justify-between">
+      <div className="flex flex-col">
+        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</h3>
+        <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{value || 0}</p>
+        {change && (
+          <div className="flex items-center mt-1">
+            <span className={`text-xs font-medium ${
+              changeType === 'good' ? 'text-green-500 dark:text-green-400' :
+              changeType === 'bad' ? 'text-red-500 dark:text-red-400' : 
+              'text-slate-500 dark:text-slate-400'
+            }`}>
+              {change > 0 ? '+' : ''}{change}%
+            </span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 ml-1">bu ay</span>
+          </div>
+        )}
+      </div>
+      <div className="rounded-full p-2 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white">
+        {icon}
+      </div>
+    </div>
+  </div>
+);
+
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const [notes, setNotes] = useState([]);
@@ -24,6 +55,9 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ notes: 0, goals: 0, completed: 0 });
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const chartRef = useRef(null);
+  // Bu değişken hata almamak için eklendi
+  const notesAndGoalsCount = stats.notes + stats.goals;
   // Artık global router değişimlerini kullanacağız
   const { isNavigating } = useRouterChange();
 
@@ -86,7 +120,8 @@ export default function Dashboard() {
         setStats({
           notes: notesCount?.length || 0,
           goals: goalsCount?.length || 0,
-          completed: completedGoals?.length || 0
+          completed: completedGoals?.length || 0,
+          favoritedNotes: 0 // Favori not sayısı için varsayılan değer
         });
         
         // Kullanıcının üye olduğu grupları al
@@ -164,7 +199,67 @@ export default function Dashboard() {
     
     fetchData();
   }, [user]);
-  
+
+  // Chart için useEffect
+  useEffect(() => {
+    if (chartRef.current && notesAndGoalsCount > 0) {
+      const ctx = chartRef.current.getContext('2d');
+      
+      // Önceki chart'ı temizle
+      if (chartRef.current.chart) {
+        chartRef.current.chart.destroy();
+      }
+      
+      // Yeni chart oluştur
+      import('chart.js').then(({ Chart, registerables }) => {
+        Chart.register(...registerables);
+        
+        const newChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Notlar', 'Hedefler', 'Tamamlanan Hedefler'],
+            datasets: [{
+              data: [stats.notes, stats.goals - stats.completed, stats.completed],
+              backgroundColor: [
+                '#f97316', // orange-500
+                '#4f46e5', // indigo-600 
+                '#10b981', // emerald-500
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  usePointStyle: true,
+                  padding: 15,
+                  color: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'
+                }
+              },
+              tooltip: {
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
+                titleColor: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#0f172a',
+                bodyColor: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569',
+                borderColor: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0',
+                borderWidth: 1,
+                padding: 10,
+                cornerRadius: 8,
+                usePointStyle: true
+              }
+            }
+          }
+        });
+        
+        // Chart referansını kaydet
+        chartRef.current.chart = newChart;
+      });
+    }
+  }, [stats, notesAndGoalsCount, chartRef.current]);
+
   if (authLoading) {
     return <Spinner />;
   }
@@ -194,211 +289,213 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
-      {/* Önceden eklediğimiz LoadingOverlay artık burada gerekli değil */}
-      {/* <LoadingOverlay show={isNavigating} /> */}
-      
-      {/* Karşılama Başlığı */}
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-          Merhaba, <span className="gradient-text">{user.email?.split('@')[0] || 'Kullanıcı'}</span>!
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          Notlarınızı yönetin, hedeflerinizi takip edin ve üretkenliğinizi artırın.
-        </p>
+    <div className="container mx-auto px-4 py-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Hoş Geldin, <span className="text-orange-500">{user?.user_metadata?.full_name || 'Ahmet'}</span></h1>
+        <p className="text-slate-500 dark:text-slate-400">İşte bugün neler olup bitiyor:</p>
       </div>
-      
-      {/* İstatistik Kartları */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-        <div className="card bg-gradient-primary-soft flex items-center">
-          <div className="h-12 w-12 bg-orange-100 dark:bg-orange-500/20 rounded-full flex items-center justify-center mr-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
+
+      {loading || authLoading || isNavigating ? (
+        <Spinner />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <StatCard 
+              title="Toplam Not" 
+              value={stats.notes}
+              change={15}
+              changeType="good"
+              icon={<DocumentTextIcon className="h-6 w-6" />}
+            />
+            <StatCard 
+              title="Toplam Hedef" 
+              value={stats.goals}
+              change={5}
+              changeType="good"
+              icon={<FlagIcon className="h-6 w-6" />}
+            />
+            <StatCard 
+              title="Tamamlanan Hedefler" 
+              value={stats.completed}
+              change={10}
+              changeType="good"
+              icon={<CheckCircleIcon className="h-6 w-6" />}
+            />
+            <StatCard 
+              title="Favori Notlar" 
+              value={stats.favoritedNotes}
+              change={0}
+              changeType="neutral"
+              icon={<StarIcon className="h-6 w-6" />}
+            />
           </div>
-          <div>
-            <p className="text-sm text-slate-700 dark:text-slate-300">Toplam Not</p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">
-              {loading ? '...' : stats.notes}
-            </p>
-          </div>
-        </div>
-        
-        <div className="card bg-gradient-primary-soft flex items-center">
-          <div className="h-12 w-12 bg-amber-100 dark:bg-amber-500/20 rounded-full flex items-center justify-center mr-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-sm text-slate-700 dark:text-slate-300">Toplam Hedef</p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">
-              {loading ? '...' : stats.goals}
-            </p>
-          </div>
-        </div>
-        
-        <div className="card bg-gradient-primary-soft flex items-center">
-          <div className="h-12 w-12 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mr-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-sm text-slate-700 dark:text-slate-300">Tamamlanan Hedef</p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">
-              {loading ? '...' : stats.completed}
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Son Aktiviteler */}
-        <div className="lg:col-span-2">
-          <div className="card h-full">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">Son Aktiviteler</h2>
-              <Link href="/activity" className="text-sm text-orange-500 dark:text-orange-400 hover:underline">
-                Tümünü Gör
-              </Link>
-            </div>
-            
-            {loading ? (
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="animate-pulse flex items-center border-b dark:border-gray-700 pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                    <div className="h-10 w-10 bg-slate-200 dark:bg-slate-700 rounded-full mr-3"></div>
-                    <div className="space-y-2 flex-1">
-                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-5/6"></div>
-                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
-                    </div>
-                  </div>
-                ))}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm dark:shadow-none dark:border dark:border-slate-800">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Son Aktiviteler</h2>
+                <Link href="/dashboard/activity" className="text-sm font-medium text-orange-500 hover:text-orange-600 dark:hover:text-orange-400">
+                  Tümünü Gör
+                </Link>
               </div>
-            ) : recentActivity.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-slate-500 dark:text-slate-400">Henüz aktivite bulunmamaktadır.</p>
-                <div className="mt-4 flex justify-center gap-4">
-                  <Link href="/notes/new" className="btn-primary">
-                    Not Ekle
-                  </Link>
-                  <Link href="/goals/new" className="btn-secondary">
-                    Hedef Ekle
-                  </Link>
+              
+              {recentActivity.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-slate-500 dark:text-slate-400">Henüz hiç aktivite yok.</p>
+                  <p className="text-slate-500 dark:text-slate-400">Not veya hedef ekleyin!</p>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {recentActivity.map((activity) => (
-                  <div key={`${activity.type}-${activity.id}`} className="flex items-start border-b dark:border-gray-700 pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 
-                      ${activity.type === 'note' 
-                        ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-500' 
-                        : activity.type === 'goal' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-500' : 'bg-purple-100 dark:bg-purple-900/30 text-purple-500'}`}
-                    >
-                      {activity.type === 'note' ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      ) : activity.type === 'goal' ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <Link 
-                        href={`/${activity.type}s/${activity.id}`}
-                        className="font-medium text-slate-800 dark:text-slate-200 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
-                      >
-                        {activity.title}
-                      </Link>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                          {new Date(activity.updated_at).toLocaleDateString('tr-TR')}
-                        </span>
-                        {activity.type === 'goal' && activity.status && (
-                          <span className={`badge ${
-                            activity.status === 'completed' ? 'badge-success' : 
-                            activity.status === 'in_progress' ? 'badge-primary' : 
-                            'badge-secondary'
-                          }`}>
-                            {activity.status === 'completed' ? 'Tamamlandı' : 
-                             activity.status === 'in_progress' ? 'Devam Ediyor' : 
-                             'Planlandı'}
-                          </span>
-                        )}
+              ) : (
+                <div className="space-y-2">
+                  {recentActivity.map((activity) => (
+                    <div key={`${activity.type}-${activity.id}`} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors">
+                      <div className="flex items-start">
+                        <div className={`p-2 rounded-full mr-3 ${
+                          activity.type === 'note' ? 'bg-orange-100 dark:bg-orange-900/20 text-orange-500' :
+                          activity.type === 'goal' ? 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-500' :
+                          'bg-green-100 dark:bg-green-900/20 text-green-500'
+                        }`}>
+                          {activity.type === 'note' && <DocumentTextIcon className="h-5 w-5" />}
+                          {activity.type === 'goal' && <FlagIcon className="h-5 w-5" />}
+                          {activity.type === 'group_note' && <DocumentTextIcon className="h-5 w-5" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start">
+                            <Link 
+                              href={
+                                activity.type === 'note' ? `/notes/${activity.id}` :
+                                activity.type === 'goal' ? `/goals/${activity.id}` :
+                                activity.type === 'group_note' ? `/groups/${activity.group_id}/notes/${activity.id}` :
+                                '#'
+                              }
+                              className="font-medium text-slate-800 dark:text-white hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+                            >
+                              {activity.title || (activity.type === 'note' ? 'İsimsiz Not' : 'İsimsiz Hedef')}
+                            </Link>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                              {formatDistanceToNow(new Date(activity.updated_at), { addSuffix: true, locale: tr })}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                            {activity.type === 'note' ? 'Not güncellendi' : 
+                             activity.type === 'goal' ? `Hedef ${activity.status === 'completed' ? 'tamamlandı' : 'güncellendi'}` :
+                             `Grup notu eklendi: ${activity.group_name || 'Grup'}`}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Hızlı Erişim */}
-        <div className="lg:col-span-1">
-          <div className="card h-full">
-            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-6">Hızlı Erişim</h2>
+                  ))}
+                </div>
+              )}
+            </div>
             
-            <div className="space-y-4">
-              <Link href="/notes/new" className="flex items-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors">
-                <div className="h-10 w-10 bg-orange-100 dark:bg-orange-500/20 rounded-full flex items-center justify-center mr-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-medium text-slate-800 dark:text-slate-200">Yeni Not</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Fikirlerinizi hızlıca kaydedin</p>
-                </div>
-              </Link>
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm dark:shadow-none dark:border dark:border-slate-800">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">İstatistikler</h2>
               
-              <Link href="/goals/new" className="flex items-center p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors">
-                <div className="h-10 w-10 bg-amber-100 dark:bg-amber-500/20 rounded-full flex items-center justify-center mr-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
+              {notesAndGoalsCount > 0 ? (
+                <div className="h-64 relative">
+                  <canvas ref={chartRef}></canvas>
                 </div>
-                <div>
-                  <h3 className="font-medium text-slate-800 dark:text-slate-200">Yeni Hedef</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Bir SMART hedef belirleyin</p>
+              ) : (
+                <div className="text-center py-8 h-64 flex flex-col justify-center">
+                  <p className="text-slate-500 dark:text-slate-400">Henüz veri yok</p>
+                  <p className="text-slate-500 dark:text-slate-400">Not veya hedef ekleyin!</p>
                 </div>
-              </Link>
-              
-              <Link href="/groups" className="flex items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-                <div className="h-10 w-10 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center mr-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-medium text-slate-800 dark:text-slate-200">Gruplar</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Ekibinizle çalışın</p>
-                </div>
-              </Link>
-              
-              <Link href="/profile" className="flex items-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
-                <div className="h-10 w-10 bg-purple-100 dark:bg-purple-500/20 rounded-full flex items-center justify-center mr-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-medium text-slate-800 dark:text-slate-200">Profil</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Hesabınızı yönetin</p>
-                </div>
-              </Link>
+              )}
             </div>
           </div>
-        </div>
-      </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm dark:shadow-none dark:border dark:border-slate-800">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Son Notlar</h2>
+                <div className="flex space-x-2">
+                  <Link href="/notes" className="text-sm font-medium text-orange-500 hover:text-orange-600 dark:hover:text-orange-400">
+                    Tümünü Gör
+                  </Link>
+                  <Link href="/notes/new" className="text-sm font-medium flex items-center text-green-500 hover:text-green-600 dark:hover:text-green-400">
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    Yeni
+                  </Link>
+                </div>
+              </div>
+              
+              {notes.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-slate-500 dark:text-slate-400">Henüz not yok.</p>
+                  <Link href="/notes/new" className="inline-flex items-center mt-2 text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 font-medium">
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    İlk notunu ekle
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {notes.map((note) => (
+                    <Link key={note.id} href={`/notes/${note.id}`} className="block p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-medium text-slate-800 dark:text-white">{note.title || 'İsimsiz Not'}</h3>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {formatDistanceToNow(new Date(note.updated_at || note.created_at), { addSuffix: true, locale: tr })}
+                        </span>
+                      </div>
+                      {note.description && (
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">{note.description}</p>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm dark:shadow-none dark:border dark:border-slate-800">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Son Hedefler</h2>
+                <div className="flex space-x-2">
+                  <Link href="/goals" className="text-sm font-medium text-orange-500 hover:text-orange-600 dark:hover:text-orange-400">
+                    Tümünü Gör
+                  </Link>
+                  <Link href="/goals/new" className="text-sm font-medium flex items-center text-green-500 hover:text-green-600 dark:hover:text-green-400">
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    Yeni
+                  </Link>
+                </div>
+              </div>
+              
+              {goals.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-slate-500 dark:text-slate-400">Henüz hedef yok.</p>
+                  <Link href="/goals/new" className="inline-flex items-center mt-2 text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 font-medium">
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    İlk hedefini ekle
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {goals.map((goal) => (
+                    <Link key={goal.id} href={`/goals/${goal.id}`} className="block p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <div className={`h-2 w-2 rounded-full mr-2 ${
+                            goal.status === 'completed' ? 'bg-green-500' :
+                            goal.status === 'in_progress' ? 'bg-orange-500' :
+                            'bg-slate-400 dark:bg-slate-600'
+                          }`}></div>
+                          <h3 className="font-medium text-slate-800 dark:text-white">{goal.title || 'İsimsiz Hedef'}</h3>
+                        </div>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {formatDistanceToNow(new Date(goal.due_date || goal.created_at), { addSuffix: true, locale: tr })}
+                        </span>
+                      </div>
+                      {goal.description && (
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 ml-4 line-clamp-1">{goal.description}</p>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
