@@ -162,7 +162,7 @@ export default function GroupNoteDetail() {
         <div className="flex items-center justify-between mb-6">
           <Link 
             href={`/groups/${id}/notes`}
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-700"
+            className="flex items-center gap-2 text-orange-500 hover:text-orange-700"
           >
             <FaArrowLeft className="inline" /> <span>Notlar Sayfasına Dön</span>
           </Link>
@@ -171,7 +171,7 @@ export default function GroupNoteDetail() {
             <div className="flex gap-2">
               <Link 
                 href={`/groups/${id}/notes/${note_id}/edit`}
-                className="text-blue-500 hover:text-blue-700 p-1 flex items-center gap-1"
+                className="text-orange-500 hover:text-orange-700 p-1 flex items-center gap-1"
                 title="Düzenle"
               >
                 <FaEdit className="inline" /> <span className="text-sm">Düzenle</span>

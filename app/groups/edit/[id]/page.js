@@ -162,7 +162,7 @@ export default function EditGroup() {
         <div className="flex items-center mb-6">
           <Link 
             href={`/groups/${id}`}
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-700"
+            className="flex items-center gap-2 text-orange-500 hover:text-orange-700"
           >
             <FaArrowLeft /> <span>Gruba Geri Dön</span>
           </Link>

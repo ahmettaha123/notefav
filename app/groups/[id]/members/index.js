@@ -314,7 +314,7 @@ export default function GroupMembersPage({ params }) {
     <div className="container mx-auto px-4 py-6 max-w-5xl">
       {/* Üst Başlık */}
       <div className="mb-8">
-        <Link href={`/groups/${id}`} className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center w-fit mb-6">
+        <Link href={`/groups/${id}`} className="text-orange-500 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 flex items-center w-fit mb-6">
           <FaArrowLeft className="mr-2" />
           <span>Grup Sayfasına Dön</span>
         </Link>

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../hooks/useAuth';
 import Link from 'next/link';
 import supabase from '../../../../../lib/supabase';
-import { FaArrowLeft, FaEdit, FaTrash, FaCheck, FaHourglassHalf, FaClock } from 'react-icons/fa';
+import { FaArrowLeft, FaEdit, FaTrash, FaCheck, FaHourglassHalf, FaClock, FaUser } from 'react-icons/fa';
 
 export default function GoalDetail() {
   const { id, goalId } = useParams();
@@ -27,7 +27,7 @@ export default function GoalDetail() {
     },
     in_progress: {
       icon: FaHourglassHalf,
-      color: 'blue',
+      color: 'orange',
       text: 'Devam Ediyor'
     },
     completed: {
@@ -300,11 +300,10 @@ export default function GoalDetail() {
   const canEditGoal = user.id === goal.creator_id || userRole === 'admin' || userRole === 'creator' || userRole === 'leader';
   
   // Öncelik renkleri
-  const priorityColors = {
-    low: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200',
-    medium: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200',
-    high: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200',
-    urgent: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+  const priorityClasses = {
+    high: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200',
+    medium: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200',
+    low: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200',
   };
   
   // Öncelik metinleri
@@ -317,7 +316,7 @@ export default function GoalDetail() {
   
   // Öncelik rengi al
   function getPriorityColor(priority) {
-    return priorityColors[priority] || priorityColors.medium;
+    return priorityClasses[priority] || priorityClasses.medium;
   }
   
   // Öncelik metni al
@@ -326,13 +325,21 @@ export default function GoalDetail() {
   }
   
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="mb-6">
+        <Link 
+          href={`/groups/${id}/goals`}
+          className="flex items-center gap-2 text-orange-500 hover:text-orange-700"
+        >
+          <FaArrowLeft className="text-sm" /> Hedeflere Dön
+        </Link>
+      </div>
       <div className="card">
         {/* Üst Kısım - Geri butonu ve İşlemler */}
         <div className="flex justify-between items-center mb-6">
           <Link
             href={`/groups/${id}/goals`}
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-700"
+            className="flex items-center gap-2 text-orange-500 hover:text-orange-700"
           >
             <FaArrowLeft className="inline" /> <span>Hedefler Sayfasına Dön</span>
           </Link>
@@ -444,7 +451,7 @@ export default function GoalDetail() {
             <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700">
               <div 
                 className={`${
-                  goal.status === 'completed' ? 'bg-green-600' : 'bg-blue-600'
+                  goal.status === 'completed' ? 'bg-green-600' : 'bg-orange-600'
                 } h-3 rounded-full transition-all duration-500`}
                 style={{ width: `${goal.progress}%` }}
               ></div>
@@ -464,19 +471,19 @@ export default function GoalDetail() {
                 </button>
                 <button 
                   onClick={() => handleUpdateProgress(25)}
-                  className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 text-blue-800 dark:text-blue-200 rounded-md transition-colors"
+                  className="px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-900/30 dark:hover:bg-orange-800/50 text-orange-800 dark:text-orange-200 rounded-md transition-colors"
                 >
                   25%
                 </button>
                 <button 
                   onClick={() => handleUpdateProgress(50)}
-                  className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 text-blue-800 dark:text-blue-200 rounded-md transition-colors"
+                  className="px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-900/30 dark:hover:bg-orange-800/50 text-orange-800 dark:text-orange-200 rounded-md transition-colors"
                 >
                   50%
                 </button>
                 <button 
                   onClick={() => handleUpdateProgress(75)}
-                  className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 text-blue-800 dark:text-blue-200 rounded-md transition-colors"
+                  className="px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-900/30 dark:hover:bg-orange-800/50 text-orange-800 dark:text-orange-200 rounded-md transition-colors"
                 >
                   75%
                 </button>
@@ -496,7 +503,7 @@ export default function GoalDetail() {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Alt Görevler</h2>
-              <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200 text-xs font-medium rounded-full px-2.5 py-1">
+              <span className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200 text-xs font-medium rounded-full px-2.5 py-1">
                 {goal.subtasks.filter(task => task.completed).length}/{goal.subtasks.length} tamamlandı
               </span>
             </div>

@@ -33,18 +33,16 @@ const statusConfig = {
 
 // Öncelik renkleri
 const priorityColors = {
-  low: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200',
-  medium: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200',
-  high: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200',
-  urgent: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200'
+  high: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200',
+  medium: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200',
+  low: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200',
 };
 
 // Öncelik metinleri
 const priorityTexts = {
-  low: 'Düşük',
-  medium: 'Orta',
   high: 'Yüksek',
-  urgent: 'Acil'
+  medium: 'Orta',
+  low: 'Düşük',
 };
 
 // Tarih formatlama fonksiyonu
@@ -289,9 +287,9 @@ export default function GroupGoals() {
         <div className="flex items-center justify-between mb-6">
           <Link 
             href={`/groups/${id}`}
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-700"
+            className="flex items-center gap-2 text-orange-500 hover:text-orange-700"
           >
-            <FaArrowLeft className="inline" /> <span>Gruba Geri Dön</span>
+            <FaArrowLeft className="text-sm" /> <span>Gruba Dön</span>
           </Link>
           
           <button 

@@ -391,7 +391,7 @@ export default function GroupMembers() {
             <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
             <Link 
               href="/groups"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
             >
               Gruplar Sayfasına Dön
             </Link>
@@ -410,7 +410,7 @@ export default function GroupMembers() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center">
             <Link 
               href={`/groups/${id}`}
@@ -420,10 +420,10 @@ export default function GroupMembers() {
             </Link>
             <div>
               <h1 className="text-xl text-white font-bold flex items-center gap-2">
-                <FaUsers className="text-blue-100" />
+                <FaUsers className="text-orange-100" />
                 <span>{group.name} Üyeleri</span>
               </h1>
-              <p className="text-blue-100 text-sm">Toplam {members.length} üye</p>
+              <p className="text-orange-100 text-sm">Toplam {members.length} üye</p>
             </div>
           </div>
           
@@ -501,8 +501,8 @@ export default function GroupMembers() {
           
           {/* Üyeler Bölümü */}
           <div>
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400">
-              <FaUser className="text-blue-500" /> 
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-orange-600 dark:text-orange-400">
+              <FaUser className="text-orange-500" /> 
               <span>Grup Üyeleri</span>
             </h2>
             
@@ -523,14 +523,14 @@ export default function GroupMembers() {
                           <img 
                             src={member.profiles.avatar_url} 
                             alt={member.profiles.username || 'Kullanıcı'} 
-                            className="w-12 h-12 rounded-full object-cover border-2 border-blue-100 dark:border-blue-900"
+                            className="w-12 h-12 rounded-full object-cover border-2 border-orange-100 dark:border-orange-900"
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 dark:from-blue-600 dark:to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-inner">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 dark:from-orange-600 dark:to-orange-700 flex items-center justify-center text-white font-bold text-lg shadow-inner">
                             {(member.profiles?.username || 'K')[0].toUpperCase()}
                           </div>
                         )}
-                        <div className="absolute -top-1 -right-1 bg-blue-400 dark:bg-blue-600 rounded-full p-0.5 shadow-md">
+                        <div className="absolute -top-1 -right-1 bg-orange-400 dark:bg-orange-600 rounded-full p-0.5 shadow-md">
                           <FaUser className="text-white text-xs" />
                         </div>
                       </div>
@@ -546,7 +546,7 @@ export default function GroupMembers() {
                     </div>
                     
                     {member.user_id === user.id ? (
-                      <div className="text-center py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
+                      <div className="text-center py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200">
                         Bu sizsiniz
                       </div>
                     ) : myRole === 'leader' && (
@@ -578,9 +578,9 @@ export default function GroupMembers() {
           
           {/* Hızlı Üye Ekleme Formu */}
           {myRole === 'leader' && (
-            <div id="invite-form" className="mt-10 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg shadow-sm border border-blue-100 dark:border-blue-900/30">
+            <div id="invite-form" className="mt-10 p-6 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg shadow-sm border border-orange-100 dark:border-orange-900/30">
               <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                <FaUserPlus className="text-blue-500" /> 
+                <FaUserPlus className="text-orange-500" /> 
                 <span>Yeni Üye Ekle</span>
               </h2>
               
@@ -595,12 +595,12 @@ export default function GroupMembers() {
                       placeholder="E-posta adresi..."
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      className="w-full pl-10 px-4 py-3 rounded-lg sm:rounded-r-none focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white mb-2 sm:mb-0"
+                      className="w-full pl-10 px-4 py-3 rounded-lg sm:rounded-r-none focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white mb-2 sm:mb-0"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="px-5 py-3 bg-blue-600 text-white rounded-lg sm:rounded-l-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-md"
+                    className="px-5 py-3 bg-orange-600 text-white rounded-lg sm:rounded-l-none hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-md"
                     disabled={inviting || !searchInput.trim()}
                   >
                     <FaUserPlus className="inline" /> 

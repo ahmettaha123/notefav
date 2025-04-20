@@ -56,18 +56,27 @@ export default function Dashboard() {
     notes: 0, 
     goals: 0, 
     completed: 0, 
-    favoritedNotes: 0,
     notesChange: 0,
     goalsChange: 0, 
     completedChange: 0
   });
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [chartLoaded, setChartLoaded] = useState(false);
   const chartRef = useRef(null);
+  const chartContainerRef = useRef(null);
   // Bu değişken hata almamak için eklendi
   const notesAndGoalsCount = stats.notes + stats.goals;
   // Artık global router değişimlerini kullanacağız
   const { isNavigating } = useRouterChange();
+  // Grafik türü seçimi
+  const [selectedDataType, setSelectedDataType] = useState("notes");
+  // Son 6 haftalık veriler (mock veri - fetch sırasında doldurulacak)
+  const [timelineData, setTimelineData] = useState({
+    notes: [],
+    goals: [],
+    completed: []
+  });
   
   // Kullanıcı adını dinamik bir şekilde profil bilgilerinden almak için getUserDisplayName fonksiyonunu düzenleyeceğim
   const getUserDisplayName = () => {
@@ -204,10 +213,65 @@ export default function Dashboard() {
           notes: currentNotesCount?.length || 0,
           goals: currentGoalsCount?.length || 0,
           completed: currentCompletedGoals?.length || 0,
-          favoritedNotes: 0, // Favori not sayısı için varsayılan değer
           notesChange,
           goalsChange,
           completedChange
+        });
+        
+        // Zaman içindeki verileri simüle ediyoruz
+        // Gerçek uygulamada burada son 6 haftalık veriler için
+        // belirli zaman dilimlerine göre ayrı sorgular yapılmalıdır
+        const generateTimelineData = () => {
+          // Başlangıç değerleri
+          let notesBase = previousNotesCount?.length || 0;
+          let goalsBase = previousGoalsCount?.length || 0;
+          let completedBase = previousCompletedGoals?.length || 0;
+          
+          // Son 6 hafta için haftalık veri noktaları oluştur
+          // Bu örnek uygulama için simüle edilmiş veriler
+          const weeks = [];
+          const notesData = [];
+          const goalsData = [];
+          const completedData = [];
+          
+          for (let i = 0; i < 6; i++) {
+            const weekDate = new Date();
+            weekDate.setDate(weekDate.getDate() - (6 - i) * 7);
+            weeks.push(`${weekDate.getDate()}/${weekDate.getMonth() + 1}`);
+            
+            // i=5 olduğunda güncel haftadayız, gerçek değerleri kullan
+            if (i === 5) {
+              notesData.push(currentNotesCount?.length || 0);
+              goalsData.push(currentGoalsCount?.length || 0);
+              completedData.push(currentCompletedGoals?.length || 0);
+            } else {
+              // Önceki haftalar için değerleri hesapla (simülasyon)
+              // Gerçek uygulamada her hafta için ayrı sorgu yapılmalı
+              const growthFactor = 1 + (Math.random() * 0.5 - 0.1); // %40 arasında rassal artış/azalış
+              notesBase = Math.round(notesBase * growthFactor);
+              goalsBase = Math.round(goalsBase * growthFactor);
+              completedBase = Math.round(completedBase * growthFactor);
+              
+              notesData.push(Math.max(0, notesBase));
+              goalsData.push(Math.max(0, goalsBase));
+              completedData.push(Math.max(0, completedBase));
+            }
+          }
+          
+          return {
+            labels: weeks,
+            notes: notesData,
+            goals: goalsData,
+            completed: completedData
+          };
+        };
+        
+        const timelineDataResult = generateTimelineData();
+        setTimelineData({
+          labels: timelineDataResult.labels,
+          notes: timelineDataResult.notes,
+          goals: timelineDataResult.goals,
+          completed: timelineDataResult.completed
         });
         
         // Kullanıcının üye olduğu grupları al
@@ -286,132 +350,185 @@ export default function Dashboard() {
     fetchData();
   }, [user]);
 
-  // Chart için useEffect
+  // Chart ile ilgili işlemler için ayrı useEffect
   useEffect(() => {
-    if (!chartRef.current || notesAndGoalsCount <= 0) {
-      return; // Çıkış yap - grafiği çizmek için koşullar uygun değil
-    }
+    if (typeof window === 'undefined') return;
     
-    const ctx = chartRef.current.getContext('2d');
-    if (!ctx) {
-      return; // Canvas context yoksa çıkış yap
-    }
-    
-    // Önceki chart'ı temizle
-    if (chartRef.current.chart) {
-      chartRef.current.chart.destroy();
-      chartRef.current.chart = null;
-    }
-    
-    // Cihaz türünü kontrol et
-    const isMobile = window.innerWidth < 768;
-    
-    // Gecikme ekleyerek DOM elementi hazır olana kadar bekle
-    const timer = setTimeout(() => {
-      // Yeni chart oluştur
-      import('chart.js').then(({ Chart, registerables }) => {
-        Chart.register(...registerables);
+    // Chart.js CDN'den yükle
+    const loadChartJS = () => {
+      if (window.Chart) {
+        console.log('Chart.js zaten yüklü, grafik oluşturuluyor...');
+        createChart();
+        return;
+      }
+
+      console.log('Chart.js CDN yükleniyor...');
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+      script.async = true;
+      script.onload = () => {
+        console.log('Chart.js CDN başarıyla yüklendi');
+        setChartLoaded(true);
+        createChart();
+      };
+      script.onerror = (err) => {
+        console.error('Chart.js yüklenirken hata oluştu:', err);
+      };
+      document.body.appendChild(script);
+    };
+
+    // Chart oluştur
+    const createChart = () => {
+      if (!chartRef.current || !window.Chart) return;
+      
+      // Veri kontrolü
+      if (!timelineData.notes || timelineData.notes.length === 0) {
+        console.log('Grafik için veri bulunamadı');
+        return;
+      }
+      
+      try {
+        const ctx = chartRef.current.getContext('2d');
+        if (!ctx) {
+          console.error('Canvas context alınamadı');
+          return;
+        }
         
-        // Component unmount edildiyse çıkış yap
-        if (!chartRef.current) return;
+        // Önceki grafiği temizle
+        if (chartRef.current.chart) {
+          chartRef.current.chart.destroy();
+        }
         
-        try {
-          const newChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-              labels: ['Notlar', 'Hedefler', 'Tamamlanan Hedefler'],
-              datasets: [{
-                data: [stats.notes, stats.goals - stats.completed, stats.completed],
-                backgroundColor: [
-                  '#f97316', // orange-500
-                  '#4f46e5', // indigo-600 
-                  '#10b981', // emerald-500
-                ],
-                borderWidth: 1
-              }]
+        // Veri tipine göre gösterilecek veriyi seç
+        let dataToShow = [];
+        let color = "";
+        let label = "";
+        
+        switch(selectedDataType) {
+          case "notes":
+            dataToShow = timelineData.notes;
+            color = "#f97316"; // Orange-500
+            label = "Notlar";
+            break;
+          case "goals":
+            dataToShow = timelineData.goals;
+            color = "#fb923c"; // Orange-400
+            label = "Hedefler";
+            break;
+          case "completed":
+            dataToShow = timelineData.completed;
+            color = "#fdba74"; // Orange-300
+            label = "Tamamlanan";
+            break;
+          default:
+            dataToShow = timelineData.notes;
+            color = "#f97316";
+            label = "Notlar";
+        }
+        
+        // Line chart oluştur
+        chartRef.current.chart = new window.Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: timelineData.labels || [],
+            datasets: [{
+              label: label,
+              data: dataToShow,
+              fill: {
+                target: 'origin',
+                above: color + "20" // %12 opaklık
+              },
+              borderColor: color,
+              borderWidth: 2,
+              pointBackgroundColor: color,
+              pointBorderColor: "#fff",
+              pointBorderWidth: 1,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.3, // Eğri yumuşaklığı
+              cubicInterpolationMode: 'monotone'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
             },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove', 'touchend'],
-              plugins: {
-                legend: {
-                  position: isMobile ? 'top' : 'bottom',
-                  labels: {
-                    boxWidth: isMobile ? 12 : 15,
-                    padding: isMobile ? 10 : 15,
-                    font: {
-                      size: isMobile ? 10 : 12
-                    },
-                    color: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569',
-                    usePointStyle: true
-                  }
+            scales: {
+              x: {
+                grid: {
+                  display: false
                 },
-                tooltip: {
-                  enabled: true,
-                  backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                  titleColor: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#0f172a',
-                  bodyColor: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569',
-                  borderColor: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0',
-                  borderWidth: 1,
-                  padding: 10,
-                  cornerRadius: 8,
-                  usePointStyle: true
+                ticks: {
+                  font: {
+                    size: 11
+                  }
+                }
+              },
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)',
+                  borderDash: [3, 3]
+                },
+                ticks: {
+                  precision: 0,
+                  font: {
+                    size: 11
+                  }
                 }
               }
-            }
-          });
-          
-          // Chart referansını kaydet
-          chartRef.current.chart = newChart;
-          
-          // Resize olayını dinle - güvenlik kontrolü ile
-          let resizeObserver;
-          try {
-            if (chartRef.current && chartRef.current.parentNode) {
-              resizeObserver = new ResizeObserver(() => {
-                if (newChart && typeof newChart.resize === 'function' && !newChart.destroyed) {
-                  try {
-                    newChart.resize();
-                  } catch (error) {
-                    console.error('Chart resize hatası:', error);
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleFont: {
+                  size: 13
+                },
+                bodyFont: {
+                  size: 12
+                },
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: false,
+                callbacks: {
+                  label: function(context) {
+                    return `${label}: ${context.raw}`;
                   }
                 }
-              });
-              
-              resizeObserver.observe(chartRef.current.parentNode);
+              }
+            },
+            interaction: {
+              intersect: false,
+              mode: 'index'
             }
-          } catch (error) {
-            console.error('ResizeObserver hatası:', error);
           }
-          
-          // Temizlik fonksiyonu
-          return () => {
-            clearTimeout(timer);
-            if (resizeObserver) {
-              resizeObserver.disconnect();
-            }
-            if (newChart && !newChart.destroyed) {
-              newChart.destroy();
-            }
-          };
-        } catch (error) {
-          console.error('Chart oluşturma hatası:', error);
-        }
-      }).catch(error => {
-        console.error('Chart.js yükleme hatası:', error);
-      });
-    }, 100); // 100ms bekleyerek DOM elementinin tamamen yüklenmesini bekle
-    
-    // useEffect temizlik
-    return () => {
-      clearTimeout(timer);
-      if (chartRef.current && chartRef.current.chart) {
-        chartRef.current.chart.destroy();
-        chartRef.current.chart = null;
+        });
+
+      } catch (err) {
+        console.error('Grafik oluşturulurken hata:', err);
       }
     };
-  }, [stats, notesAndGoalsCount]);
+
+    // Sayfa yüklendikten sonra Chart.js'i yükle
+    // Hata çözümü: timelineData.labels güvenli erişim için kontrol eklendi
+    if (!isNavigating && timelineData?.labels && timelineData.labels.length > 0) {
+      const timer = setTimeout(() => {
+        loadChartJS();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [timelineData, selectedDataType, isNavigating, chartLoaded]);
+
+  // Veri tipi değiştirme işleyicisi
+  const handleDataTypeChange = (type) => {
+    setSelectedDataType(type);
+  };
 
   if (authLoading) {
     return <Spinner />;
@@ -443,6 +560,8 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 py-6">
+      {/* Chart.js CDN'den yükle */}
+      
       <div className="mb-8">
         <h1 className="text-2xl font-semibold mb-2">
           Hoş geldin, <span className="text-orange-500 font-bold">{getUserDisplayName()}</span>!
@@ -456,7 +575,7 @@ export default function Dashboard() {
         <Spinner />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             <StatCard 
               title="Toplam Not" 
               value={stats.notes}
@@ -477,13 +596,6 @@ export default function Dashboard() {
               change={stats.completedChange}
               changeType={stats.completedChange >= 0 ? 'good' : 'bad'}
               icon={<CheckCircleIcon className="h-6 w-6" />}
-            />
-            <StatCard 
-              title="Favori Notlar" 
-              value={stats.favoritedNotes}
-              change={0}
-              changeType="neutral"
-              icon={<StarIcon className="h-6 w-6" />}
             />
           </div>
 
@@ -548,10 +660,64 @@ export default function Dashboard() {
             <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm dark:shadow-none dark:border dark:border-slate-800">
               <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">İstatistikler</h2>
               
-              {notesAndGoalsCount > 0 ? (
-                <div className="h-60 md:h-64 relative w-full flex items-center justify-center">
-                  <canvas ref={chartRef} style={{ touchAction: 'none', minHeight: '200px' }}></canvas>
-                </div>
+              {timelineData.labels.length > 0 ? (
+                <>
+                  <div 
+                    ref={chartContainerRef}
+                    className="h-64 md:h-60 relative w-full mb-4"
+                  >
+                    <canvas 
+                      ref={chartRef} 
+                      id="statsChart"
+                      style={{ 
+                        touchAction: 'none', 
+                        minHeight: '200px',
+                        maxWidth: '100%', 
+                        width: '100%', 
+                        height: '100%', 
+                        display: 'block' 
+                      }}
+                    ></canvas>
+                  </div>
+                  
+                  <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-4 pt-2 px-1">
+                    <button 
+                      onClick={() => handleDataTypeChange("notes")}
+                      className={`flex items-center gap-1.5 text-xs sm:text-sm px-2 py-1.5 rounded transition ${
+                        selectedDataType === "notes" 
+                          ? "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 font-medium" 
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <span className="h-2.5 w-2.5 rounded-full bg-orange-500 flex-shrink-0"></span>
+                      <span>Notlar</span>
+                    </button>
+                    
+                    <button 
+                      onClick={() => handleDataTypeChange("goals")}
+                      className={`flex items-center gap-1.5 text-xs sm:text-sm px-2 py-1.5 rounded transition ${
+                        selectedDataType === "goals" 
+                          ? "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 font-medium" 
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <span className="h-2.5 w-2.5 rounded-full bg-orange-400 flex-shrink-0"></span>
+                      <span>Hedefler</span>
+                    </button>
+                    
+                    <button 
+                      onClick={() => handleDataTypeChange("completed")}
+                      className={`flex items-center gap-1.5 text-xs sm:text-sm px-2 py-1.5 rounded transition ${
+                        selectedDataType === "completed" 
+                          ? "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 font-medium" 
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <span className="h-2.5 w-2.5 rounded-full bg-orange-300 flex-shrink-0"></span>
+                      <span>Tamamlanan</span>
+                    </button>
+                  </div>
+                </>
               ) : (
                 <div className="text-center py-8 h-64 flex flex-col justify-center">
                   <p className="text-slate-500 dark:text-slate-400">Henüz veri yok</p>

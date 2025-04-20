@@ -231,7 +231,7 @@ export default function GroupNotes() {
         <div className="flex items-center justify-between mb-6">
           <Link 
             href={`/groups/${id}`}
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-700"
+            className="flex items-center gap-2 text-orange-500 hover:text-orange-700"
           >
             <FaArrowLeft className="inline" /> <span>Gruba Geri Dön</span>
           </Link>

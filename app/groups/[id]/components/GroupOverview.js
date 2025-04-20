@@ -46,7 +46,7 @@ export default function GroupOverview({
         case 'completed':
           return <span className="text-xs px-2 py-0.5 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded-full">Tamamlandı</span>;
         case 'in_progress':
-          return <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-full">Devam Ediyor</span>;
+          return <span className="text-xs px-2 py-0.5 bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 rounded-full">Devam Ediyor</span>;
         case 'cancelled':
           return <span className="text-xs px-2 py-0.5 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 rounded-full">İptal Edildi</span>;
         default:
@@ -69,7 +69,7 @@ export default function GroupOverview({
           {/* İlerleme çubuğu */}
           <div className="w-full h-2 bg-gray-200 dark:bg-slate-700 rounded-full mb-2">
             <div 
-              className="h-full bg-blue-500 dark:bg-blue-600 rounded-full"
+              className="h-full bg-orange-500 dark:bg-orange-600 rounded-full"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
@@ -121,8 +121,8 @@ export default function GroupOverview({
               <p className="text-gray-500 dark:text-gray-400 text-sm">Grup Üyeleri</p>
               <p className="text-2xl font-bold">{membersCount}</p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-              <FaUsers className="text-blue-500 dark:text-blue-400 h-6 w-6" />
+            <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+              <FaUsers className="text-orange-500 dark:text-orange-400 h-6 w-6" />
             </div>
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function GroupOverview({
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Son Notlar</h2>
-          <Link href={`/groups/${groupId}/notes`} className="text-blue-500 dark:text-blue-400 hover:underline flex items-center">
+          <Link href={`/groups/${groupId}/notes`} className="text-orange-500 dark:text-orange-400 hover:underline flex items-center">
             <FaEye className="mr-1" /> Tümünü Gör
           </Link>
         </div>
@@ -187,7 +187,7 @@ export default function GroupOverview({
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Grup Hedefleri</h2>
-          <Link href={`/groups/${groupId}/goals`} className="text-blue-500 dark:text-blue-400 hover:underline flex items-center">
+          <Link href={`/groups/${groupId}/goals`} className="text-orange-500 dark:text-orange-400 hover:underline flex items-center">
             <FaEye className="mr-1" /> Tümünü Gör
           </Link>
         </div>

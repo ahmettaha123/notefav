@@ -288,7 +288,7 @@ function NewGroupContent() {
         
       <div className="card mb-4">
         <h2 className="text-xl font-semibold mb-4">Grup Kurulumu</h2>
-        <div className="mb-4 p-3 bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 rounded-md">
+        <div className="mb-4 p-3 bg-orange-50 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200 rounded-md">
           <span className="font-medium block mb-1">Bilgi:</span>
           Grubu oluşturduktan sonra istediğiniz zaman "Üyeler" sayfasını kullanarak e-posta adreslerine göre üyeleri ekleyebilirsiniz.
           Siz otomatik olarak grubun lideri olacaksınız.

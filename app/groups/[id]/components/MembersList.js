@@ -62,7 +62,7 @@ export default function MembersList({ members, myRole, groupId, onRoleChange, on
       case 'admin':
         return <FaUserShield className="text-green-500" />;
       default:
-        return <FaUser className="text-blue-500" />;
+        return <FaUser className="text-orange-500" />;
     }
   };
   
@@ -90,7 +90,7 @@ export default function MembersList({ members, myRole, groupId, onRoleChange, on
       case 'admin':
         return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       default:
-        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300';
     }
   };
 

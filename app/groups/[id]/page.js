@@ -426,15 +426,15 @@ export default function GroupPage({ params }) {
     }
   };
 
-  if (authLoading || (loading && !error)) {
+  if (loading || authLoading) {
     return (
-      <div className="flex justify-center items-center py-20">
+      <div className="flex justify-center py-16">
         <div className="flex flex-col items-center">
-          <div className="relative w-16 h-16 mb-4">
-            <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-200 dark:border-blue-800 rounded-full animate-pulse"></div>
-            <div className="absolute top-0 left-0 w-full h-full border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
+          <div className="relative w-16 h-16 mb-6">
+            <div className="absolute top-0 left-0 w-full h-full border-4 border-orange-200 dark:border-orange-800 rounded-full animate-pulse"></div>
+            <div className="absolute top-0 left-0 w-full h-full border-4 border-transparent border-t-orange-500 rounded-full animate-spin"></div>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">Grup yükleniyor...</p>
+          <h2 className="text-xl font-semibold text-gray-600 dark:text-gray-400">Grup Yükleniyor</h2>
         </div>
       </div>
     );
@@ -442,23 +442,20 @@ export default function GroupPage({ params }) {
 
   if (error) {
     return (
-      <div className="text-center py-16">
-        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 mx-auto rounded-full flex items-center justify-center mb-6">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-        </div>
-        <h1 className="text-3xl font-bold mb-4">Bir hata oluştu</h1>
-        <p className="mb-6 text-gray-600 dark:text-gray-400 max-w-md mx-auto">{error}</p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button 
-            onClick={() => window.location.reload()} 
-            className="btn-primary"
+      <div className="container mx-auto max-w-4xl px-4 py-12">
+        <div className="flex flex-col items-center text-center bg-white dark:bg-slate-900 rounded-xl p-12 shadow-sm dark:shadow-none dark:border dark:border-slate-800">
+          <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 mx-auto rounded-full flex items-center justify-center mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold mb-4">Bir Hata Oluştu</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md">{error}</p>
+          <Link
+            href="/groups"
+            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors flex items-center justify-center"
           >
-            Yeniden Dene
-          </button>
-          <Link href="/groups" className="btn-secondary">
-            Gruplarıma Dön
+            <FaArrowLeft className="mr-2" /> Gruplar Sayfasına Dön
           </Link>
         </div>
       </div>
@@ -467,31 +464,59 @@ export default function GroupPage({ params }) {
 
   if (!isMember && group) {
     return (
-      <div className="text-center py-16">
-        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 mx-auto rounded-full flex items-center justify-center mb-6">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-        </div>
-        <h1 className="text-3xl font-bold mb-2">{group.name}</h1>
-        <div 
-          className="h-1 w-24 mx-auto mb-4"
-          style={{backgroundColor: group.color || '#3b82f6'}}
-        ></div>
-        <p className="mb-6 text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-          {group.description || 'Bu grup hakkında açıklama bulunmuyor.'}
-        </p>
-        <p className="mb-8 text-gray-500">Bu grubun üyesi değilsiniz. Grup içeriğini görüntülemek için katılmanız gerekiyor.</p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button 
-            onClick={handleJoinGroup} 
-            className="btn-primary"
-          >
-            Gruba Katıl
-          </button>
-          <Link href="/groups" className="btn-secondary">
-            Geri Dön
-          </Link>
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="flex flex-col bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-none dark:border dark:border-slate-800 overflow-hidden">
+          <div className="px-6 py-16 text-center">
+            <div className="w-20 h-20 rounded-full bg-orange-100 dark:bg-orange-900/30 mx-auto flex items-center justify-center mb-6">
+              <FaUsers className="h-10 w-10 text-orange-500" />
+            </div>
+            
+            <h1 className="text-2xl font-bold mb-2">{group.name}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              {group.description || "Bu grup için henüz bir açıklama eklenmemiş."}
+            </p>
+            
+            <div className="max-w-md mx-auto mb-8">
+              <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                <span className="text-gray-600 dark:text-gray-400">Grup Kurucusu:</span>
+                <span className="font-medium">{group.profiles?.full_name || group.profiles?.username || "Bilinmiyor"}</span>
+              </div>
+              <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                <span className="text-gray-600 dark:text-gray-400">Oluşturulma Tarihi:</span>
+                <span className="font-medium">{new Date(group.created_at).toLocaleDateString('tr-TR')}</span>
+              </div>
+              <div className="flex justify-between py-3">
+                <span className="text-gray-600 dark:text-gray-400">Üye Sayısı:</span>
+                <span className="font-medium">{members.length} Üye</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row justify-center gap-4 items-center">
+              <button
+                onClick={handleJoinGroup}
+                className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center w-full sm:w-auto"
+                disabled={isJoining}
+              >
+                {isJoining ? (
+                  <>
+                    <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></span>
+                    Katılınıyor...
+                  </>
+                ) : (
+                  <>
+                    <FaUserPlus className="mr-2" /> Gruba Katıl
+                  </>
+                )}
+              </button>
+              
+              <Link
+                href="/groups"
+                className="px-6 py-3 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center w-full sm:w-auto"
+              >
+                <FaArrowLeft className="mr-2" /> Geri Dön
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     );

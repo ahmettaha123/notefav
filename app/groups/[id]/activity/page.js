@@ -122,15 +122,15 @@ export default function GroupActivity() {
       case 'create_note':
         return <FaPlus className="text-green-500" />;
       case 'update_note':
-        return <FaEdit className="text-blue-500" />;
+        return <FaEdit className="text-orange-500" />;
       case 'delete_note':
         return <FaTrash className="text-red-500" />;
       case 'create_goal':
         return <FaPlus className="text-green-500" />;
       case 'update_goal':
-        return <FaEdit className="text-blue-500" />;
+        return <FaEdit className="text-orange-500" />;
       case 'update_goal_status':
-        return <FaCheck className="text-blue-500" />;
+        return <FaCheck className="text-orange-500" />;
       case 'delete_goal':
         return <FaTrash className="text-red-500" />;
       case 'member_added':
@@ -138,7 +138,7 @@ export default function GroupActivity() {
       case 'member_removed':
         return <FaUserMinus className="text-red-500" />;
       case 'update_role':
-        return <FaUserCog className="text-blue-500" />;
+        return <FaUserCog className="text-orange-500" />;
       case 'leader_changed':
         return <FaUserCog className="text-purple-500" />;
       default:
@@ -224,7 +224,7 @@ export default function GroupActivity() {
         <div className="flex items-center mb-6">
           <Link 
             href={`/groups/${id}`}
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-700 mb-4"
+            className="flex items-center gap-2 text-orange-500 hover:text-orange-700 mb-4"
           >
             <FaArrowLeft className="inline" /> <span>Gruba Geri Dön</span>
           </Link>
@@ -266,7 +266,7 @@ export default function GroupActivity() {
               <div className="text-center py-4">
                 <button 
                   onClick={loadMore}
-                  className="px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800/30"
+                  className="px-4 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-md hover:bg-orange-200 dark:hover:bg-orange-800/30"
                 >
                   Daha Fazla Yükle
                 </button>

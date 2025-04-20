@@ -29,7 +29,7 @@ export default function GroupHeader({ group, membersCount, myRole, onInvite }) {
         );
       default:
         return (
-          <span className="flex items-center text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+          <span className="flex items-center text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300">
             <FaUser className="mr-1" /> Üye
           </span>
         );
@@ -42,7 +42,7 @@ export default function GroupHeader({ group, membersCount, myRole, onInvite }) {
     <div className="mb-8">
       {/* Geri butonu */}
       <div className="mb-6">
-        <Link href="/groups" className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center w-fit">
+        <Link href="/groups" className="text-orange-500 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 flex items-center w-fit">
           <FaArrowLeft className="mr-2" />
           <span>Gruplara Dön</span>
         </Link>
@@ -52,7 +52,7 @@ export default function GroupHeader({ group, membersCount, myRole, onInvite }) {
         {/* Renkli üst kenar */}
         <div 
           className="h-3" 
-          style={{ backgroundColor: group.color || '#3b82f6' }}
+          style={{ backgroundColor: group.color || '#f97316' }}
         ></div>
         
         {/* Grup içeriği */}

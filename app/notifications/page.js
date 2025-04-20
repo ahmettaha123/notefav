@@ -70,7 +70,7 @@ const NotificationsPage = () => {
       case 'medium':
         return 'bg-yellow-500';
       default:
-        return 'bg-blue-500';
+        return 'bg-orange-500';
     }
   };
 

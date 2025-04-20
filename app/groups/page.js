@@ -130,7 +130,7 @@ export default function Groups() {
     return (
       <div className="flex justify-center items-center py-16">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4"></div>
+          <div className="h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900/30 mb-4"></div>
           <div className="h-4 w-32 bg-gray-100 dark:bg-gray-800 rounded"></div>
         </div>
       </div>
@@ -140,8 +140,8 @@ export default function Groups() {
   if (!user) {
     return (
       <div className="text-center py-16 max-w-md mx-auto">
-        <div className="h-20 w-20 bg-blue-100 dark:bg-blue-900/30 mx-auto rounded-full flex items-center justify-center mb-6">
-          <FaUsers className="h-10 w-10 text-blue-500" />
+        <div className="h-20 w-20 bg-orange-100 dark:bg-orange-900/30 mx-auto rounded-full flex items-center justify-center mb-6">
+          <FaUsers className="h-10 w-10 text-orange-500" />
         </div>
         <h1 className="text-3xl font-bold mb-4">Giriş yapmalısınız</h1>
         <p className="mb-6 text-gray-600 dark:text-gray-400">Gruplarınızı görüntülemek ve yönetmek için giriş yapmanız gerekmektedir.</p>
@@ -193,14 +193,14 @@ export default function Groups() {
                 placeholder="Grup ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-slate-800 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-700"
+                className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-slate-800 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-700"
               />
             </div>
             <div className="flex gap-2 items-center">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 bg-white dark:bg-slate-800 border rounded-md dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-700"
+                className="px-3 py-2 bg-white dark:bg-slate-800 border rounded-md dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-700"
               >
                 <option value="name">İsme Göre</option>
                 <option value="date">Tarihe Göre</option>
@@ -208,14 +208,14 @@ export default function Groups() {
               <div className="flex border rounded-md overflow-hidden dark:border-slate-700">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-white dark:bg-slate-800'}`}
+                  className={`p-2 ${viewMode === 'grid' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' : 'bg-white dark:bg-slate-800'}`}
                   aria-label="Izgara görünümü"
                 >
                   <FaTh />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-white dark:bg-slate-800'}`}
+                  className={`p-2 ${viewMode === 'list' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' : 'bg-white dark:bg-slate-800'}`}
                   aria-label="Liste görünümü"
                 >
                   <FaList />
@@ -242,8 +242,8 @@ export default function Groups() {
         <div className="py-12 flex justify-center">
           <div className="flex flex-col items-center">
             <div className="relative w-16 h-16 mb-4">
-              <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-200 dark:border-blue-800 rounded-full animate-pulse"></div>
-              <div className="absolute top-0 left-0 w-full h-full border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
+              <div className="absolute top-0 left-0 w-full h-full border-4 border-orange-200 dark:border-orange-800 rounded-full animate-pulse"></div>
+              <div className="absolute top-0 left-0 w-full h-full border-4 border-transparent border-t-orange-500 rounded-full animate-spin"></div>
             </div>
             <p className="text-gray-600 dark:text-gray-400">Gruplar yükleniyor...</p>
           </div>
@@ -300,7 +300,7 @@ export default function Groups() {
           {filteredMemberGroups.length > 0 && (
             <div>
               <div className="flex items-center mb-4">
-                <FaUser className="text-blue-500 mr-2" />
+                <FaUser className="text-orange-500 mr-2" />
                 <h2 className="text-xl font-semibold">Üye Olduğum Gruplar</h2>
               </div>
               {viewMode === 'grid' ? (
@@ -325,7 +325,7 @@ export default function Groups() {
               <p className="text-gray-600 dark:text-gray-400 mb-4">"{searchTerm}" için sonuç bulunamadı</p>
               <button 
                 onClick={() => setSearchTerm('')}
-                className="text-blue-500 hover:underline"
+                className="text-orange-500 hover:underline"
               >
                 Aramayı temizle
               </button>
@@ -334,8 +334,8 @@ export default function Groups() {
           
           {totalGroups === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6">
-                <FaUsers className="h-12 w-12 text-blue-500" />
+              <div className="w-24 h-24 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mb-6">
+                <FaUsers className="h-12 w-12 text-orange-500" />
               </div>
               <h2 className="text-2xl font-bold mb-3 text-gray-800 dark:text-white">Henüz bir grubunuz yok</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
@@ -384,7 +384,7 @@ function GroupCard({ group, viewMode }) {
         );
       default:
         return (
-          <span className="flex items-center text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+          <span className="flex items-center text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300">
             <FaUser className="mr-1" /> Üye
           </span>
         );
@@ -396,13 +396,13 @@ function GroupCard({ group, viewMode }) {
       <Link href={`/groups/${group.id}`} className="block">
         <div 
           className="bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm dark:shadow-none dark:border dark:border-slate-800 hover:shadow-md transition-shadow duration-200 flex items-center"
-          style={{ borderLeft: `4px solid ${group.color || '#3b82f6'}` }}
+          style={{ borderLeft: `4px solid ${group.color || '#f97316'}` }}
         >
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
               <h3 className="text-lg font-semibold">{group.name}</h3>
               {group.isNew && (
-                <span className="text-xs px-2 py-0.5 bg-blue-500 text-white rounded-full w-fit">Yeni</span>
+                <span className="text-xs px-2 py-0.5 bg-orange-500 text-white rounded-full w-fit">Yeni</span>
               )}
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1 mb-1">
@@ -424,13 +424,13 @@ function GroupCard({ group, viewMode }) {
     <Link href={`/groups/${group.id}`} className="block h-full">
       <div 
         className="bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm dark:shadow-none dark:border dark:border-slate-800 hover:shadow-md transition-shadow duration-200 h-full flex flex-col"
-        style={{ borderTop: `4px solid ${group.color || '#3b82f6'}` }}
+        style={{ borderTop: `4px solid ${group.color || '#f97316'}` }}
       >
         <div className="flex justify-between items-start mb-2">
           <div className="flex flex-col">
             <h3 className="text-lg font-semibold line-clamp-1">{group.name}</h3>
             {group.isNew && (
-              <span className="text-xs px-2 py-0.5 bg-blue-500 text-white rounded-full w-fit mt-1">Yeni</span>
+              <span className="text-xs px-2 py-0.5 bg-orange-500 text-white rounded-full w-fit mt-1">Yeni</span>
             )}
           </div>
           <div>

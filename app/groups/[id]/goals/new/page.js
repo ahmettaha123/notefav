@@ -131,8 +131,8 @@ export default function NewGroupGoal() {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="rounded-full bg-blue-200 dark:bg-blue-700 h-16 w-16 mb-4 flex items-center justify-center">
-            <FaBullseye className="text-blue-500 dark:text-blue-300 text-2xl animate-ping opacity-75" />
+          <div className="rounded-full bg-orange-200 dark:bg-orange-700 h-16 w-16 mb-4 flex items-center justify-center">
+            <FaBullseye className="text-orange-500 dark:text-orange-300 text-2xl animate-ping opacity-75" />
           </div>
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-36 mb-3"></div>
           <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
@@ -151,7 +151,7 @@ export default function NewGroupGoal() {
             <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
             <Link 
               href={`/groups/${groupId}/goals`}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
             >
               Hedefler Sayfasına Dön
             </Link>
@@ -164,7 +164,7 @@ export default function NewGroupGoal() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 flex items-center">
+        <div className="bg-gradient-to-r from-orange-500 to-yellow-600 px-6 py-4 flex items-center">
           <Link 
             href={`/groups/${groupId}/goals`}
             className="mr-4 p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"
@@ -173,7 +173,7 @@ export default function NewGroupGoal() {
           </Link>
           <div>
             <h1 className="text-xl text-white font-bold">Yeni Hedef Ekle</h1>
-            <p className="text-blue-100 text-sm">{group?.name} grubuna yeni bir hedef ekleyin</p>
+            <p className="text-orange-100 text-sm">{group?.name} grubuna yeni bir hedef ekleyin</p>
           </div>
         </div>
         
@@ -188,7 +188,7 @@ export default function NewGroupGoal() {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 placeholder="Hedefin başlığını girin..."
                 required
               />
@@ -202,7 +202,7 @@ export default function NewGroupGoal() {
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-h-[120px]"
+                className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-h-[120px]"
                 placeholder="Hedefin detaylarını açıklayın..."
               />
             </div>
@@ -220,7 +220,7 @@ export default function NewGroupGoal() {
                     id="priority"
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
-                    className="appearance-none w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white pr-10"
+                    className="appearance-none w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white pr-10"
                   >
                     <option value="low">Düşük</option>
                     <option value="medium">Orta</option>
@@ -246,7 +246,7 @@ export default function NewGroupGoal() {
                   id="dueDate"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
             </div>
@@ -261,7 +261,7 @@ export default function NewGroupGoal() {
               
               <button
                 type="submit"
-                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-md hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 flex items-center gap-2 transition-all shadow-md"
+                className="px-6 py-2 bg-gradient-to-r from-orange-500 to-yellow-600 text-white rounded-md hover:from-orange-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 flex items-center gap-2 transition-all shadow-md"
                 disabled={saving}
               >
                 <FaSave /> <span>{saving ? 'Kaydediliyor...' : 'Kaydet'}</span>
