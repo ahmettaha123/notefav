@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getNotificationsFromStorage } from '../../lib/notifications';
 import { 
+  getNotificationsFromStorage,
   markNotificationAsRead, 
   markAllNotificationsAsRead, 
   deleteNotification, 
   clearAllNotifications,
   createTestNotifications
-} from '@/lib/notifications';
+} from '../../lib/notifications';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
