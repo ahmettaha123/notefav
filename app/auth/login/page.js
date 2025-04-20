@@ -44,15 +44,15 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const result = await signIn(email, password);
-      if (!result.success) {
-        setError(result.error);
-      }
+    const result = await signIn(email, password);
+    if (!result.success) {
+      setError(result.error);
+    }
     } catch (err) {
       setError('Giriş yapılırken beklenmeyen bir hata oluştu.');
       console.error(err);
     } finally {
-      setLoading(false);
+    setLoading(false);
     }
   };
 
@@ -102,11 +102,11 @@ export default function Login() {
         </div>
         
         <div className="space-y-4">
-          <button 
-            type="submit" 
+        <button 
+          type="submit" 
             className="btn-primary w-full py-2.5"
-            disabled={loading}
-          >
+          disabled={loading}
+        >
             {loading ? (
               <div className="flex items-center justify-center">
                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -116,7 +116,7 @@ export default function Login() {
                 Giriş yapılıyor...
               </div>
             ) : 'Giriş Yap'}
-          </button>
+        </button>
           
           <p className="text-xs text-center text-gray-500 dark:text-gray-400">
             Güvenliğiniz için oturumunuz otomatik olarak açık tutulacaktır

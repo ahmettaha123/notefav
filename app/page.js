@@ -22,7 +22,7 @@ export default function Home() {
       <section className="py-12 md:py-20 text-center">
         <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 bg-clip-text text-transparent drop-shadow-sm" data-testid="hero-title">
           Fikirlerini Not Al,<br />Hedeflerini Gerçekleştir!
-        </h1>
+          </h1>
         
         <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-10 max-w-3xl mx-auto">
           NoteFav ile düşüncelerinizi düzenleyin, 
@@ -36,15 +36,15 @@ export default function Home() {
             aria-label="Ücretsiz hesap oluşturun"
           >
             Ücretsiz Başla
-          </Link>
+            </Link>
           
           <Link 
             href="/features"
             className="btn-secondary py-3 px-8 text-lg"
             aria-label="NoteFav'ın tüm özelliklerini görüntüle"
           >
-            Özellikler
-          </Link>
+              Özellikler
+            </Link>
         </div>
         
         {/* Animasyonlu not öğeleri - Daha temiz ve basit */}
@@ -70,7 +70,7 @@ export default function Home() {
           <StatCard number="250K+" label="Oluşturulan Not" />
           <StatCard number="50K+" label="Tamamlanan Hedef" />
           <StatCard number="99.9%" label="Erişilebilirlik" />
-        </div>
+                </div>
       </section>
       
       {/* Özellikler Section */}

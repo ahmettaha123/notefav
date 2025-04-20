@@ -82,37 +82,41 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setMessage('');
-    
-    // Validation
-    if (password !== confirmPassword) {
-      setError('Şifreler eşleşmiyor');
-      return;
-    }
-    
-    if (password.length < 6) {
-      setError('Şifre en az 6 karakter olmalıdır');
-      return;
-    }
-    
     setLoading(true);
-    
-    try {
-    const result = await signUp(email, password);
-    if (result.success) {
-      setMessage('Kayıt başarılı! E-posta adresinizi kontrol edin.');
-        // İsteğe bağlı olarak formu sıfırla
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-    } else {
-      setError(result.error);
+
+    if (password.length < 6) {
+      setError('Şifre en az 6 karakter olmalıdır.');
+      setLoading(false);
+      return;
     }
+
+    if (password !== confirmPassword) {
+      setError('Şifreler eşleşmiyor.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // setUserFullName, eğer email içinde Türkçe karakter varsa bunlar korunacak
+      const fullName = email.split('@')[0] || 'Kullanıcı';
+
+      // Önce auth servisine kayıt
+      const result = await signUp(email, password);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      setMessage('Kayıt başarılı! E-posta adresinizi kontrol edin.');
+      // İsteğe bağlı olarak formu sıfırla
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
     } catch (err) {
-      setError('Kayıt sırasında beklenmeyen bir hata oluştu.');
+      setError('Kayıt sırasında bir hata oluştu.');
       console.error(err);
     } finally {
-    setLoading(false);
+      setLoading(false);
     }
   };
 

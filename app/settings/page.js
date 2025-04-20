@@ -9,15 +9,12 @@ import Link from 'next/link';
 function SettingsContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('account');
+  const [activeTab, setActiveTab] = useState('preferences');
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   
   // Form alanları
-  const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
-  const [bio, setBio] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [language, setLanguage] = useState('tr');
@@ -44,9 +41,6 @@ function SettingsContent() {
         if (error) throw error;
         
         setProfile(data);
-        setFullName(data?.full_name || '');
-        setUsername(data?.username || '');
-        setBio(data?.bio || '');
         
         // LocalStorage'dan tema tercihini al
         const savedTheme = localStorage.getItem('theme');
@@ -61,35 +55,6 @@ function SettingsContent() {
     
     loadProfile();
   }, [user, authLoading, router]);
-  
-  const handleSaveProfile = async () => {
-    try {
-      setLoading(true);
-      
-      const updates = {
-        id: user.id,
-        full_name: fullName.trim(),
-        username: username.trim(),
-        bio: bio.trim(),
-        updated_at: new Date().toISOString()
-      };
-      
-      const { error } = await supabase
-        .from('profiles')
-        .upsert(updates, { onConflict: 'id' });
-        
-      if (error) throw error;
-      
-      setProfile({ ...profile, ...updates });
-      showNotification('Profil bilgileriniz başarıyla güncellendi.', 'success');
-      
-    } catch (error) {
-      console.error('Profil güncellenirken hata:', error);
-      showNotification('Profil güncellenirken bir hata oluştu.', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
   
   const handleSavePreferences = () => {
     // Tema tercihini kaydet
@@ -140,17 +105,6 @@ function SettingsContent() {
         <div className="w-full md:w-1/4">
           <div className="card p-0 overflow-hidden">
             <button 
-              onClick={() => setActiveTab('account')} 
-              className={`w-full text-left px-4 py-3 border-l-4 ${
-                activeTab === 'account' 
-                  ? 'border-l-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 font-medium'
-                  : 'border-l-transparent hover:bg-gray-50 dark:hover:bg-gray-800/50'
-              }`}
-            >
-              Hesap Bilgileri
-            </button>
-            
-            <button 
               onClick={() => setActiveTab('preferences')} 
               className={`w-full text-left px-4 py-3 border-l-4 ${
                 activeTab === 'preferences' 
@@ -194,73 +148,6 @@ function SettingsContent() {
         
         {/* Sağ İçerik */}
         <div className="w-full md:w-3/4">
-          {/* Hesap Bilgileri */}
-          {activeTab === 'account' && (
-            <div className="card">
-              <h2 className="text-xl font-semibold mb-4">Hesap Bilgileri</h2>
-              
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label htmlFor="email" className="block mb-1 font-medium">E-posta</label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={user.email}
-                    disabled
-                    className="w-full px-3 py-2 border rounded-md bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">E-posta adresinizi değiştirmek için destek ekibimizle iletişime geçin.</p>
-                </div>
-                
-                <div>
-                  <label htmlFor="fullName" className="block mb-1 font-medium">Tam Ad</label>
-                  <input
-                    type="text"
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    placeholder="Tam adınız"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="username" className="block mb-1 font-medium">Kullanıcı Adı</label>
-                  <input
-                    type="text"
-                    id="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    placeholder="Kullanıcı adınız"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="bio" className="block mb-1 font-medium">Hakkımda</label>
-                  <textarea
-                    id="bio"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    placeholder="Kendinizi kısaca tanıtın"
-                  ></textarea>
-                </div>
-              </div>
-              
-              <div className="flex justify-end">
-                <button 
-                  onClick={handleSaveProfile}
-                  disabled={loading}
-                  className="btn-primary"
-                >
-                  {loading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-                </button>
-              </div>
-            </div>
-          )}
-          
           {/* Tercihler */}
           {activeTab === 'preferences' && (
             <div className="card">

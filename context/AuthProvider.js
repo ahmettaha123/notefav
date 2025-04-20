@@ -86,12 +86,16 @@ export default function AuthProvider({ children }) {
 
   const signUp = async (email, password) => {
     try {
+      // Email'den kullanıcı adını çıkar ve Türkçe karakterleri koru
+      const defaultName = email?.split('@')[0] || 'Kullanıcı';
+      
       const { error } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
           emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
-          data: {
+          data: { 
+            full_name: defaultName,
             last_sign_in: new Date().toISOString()
           }
         }

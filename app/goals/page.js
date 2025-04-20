@@ -206,54 +206,54 @@ function GoalsContent() {
             const showDeadline = deadlineStatus.urgent && !isCompleted;
             
             return (
-              <Link key={goal.id} href={`/goals/${goal.id}`}>
+            <Link key={goal.id} href={`/goals/${goal.id}`}>
                 <div className={`card hover:shadow-lg transition-all cursor-pointer ${
                   showDeadline ? `border-2 ${deadlineStatus.borderColor}` : ''
                 }`}>
-                  <div className="flex justify-between items-center mb-3">
-                    <h2 className="text-lg font-semibold">{goal.title}</h2>
+                <div className="flex justify-between items-center mb-3">
+                  <h2 className="text-lg font-semibold">{goal.title}</h2>
                     <div className="flex gap-2 items-center">
                       {showDeadline && (
                         <span className={`text-xs px-2 py-1 rounded-full ${deadlineStatus.textColor} bg-white dark:bg-slate-800`}>
                           {deadlineStatus.text}
                         </span>
                       )}
-                      <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(goal.progress || 0)}`}>
-                        {getStatusText(goal.progress || 0)}
-                      </span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(goal.progress || 0)}`}>
+                    {getStatusText(goal.progress || 0)}
+                  </span>
                     </div>
+                </div>
+                
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    {goal.description?.substring(0, 150)}
+                    {goal.description?.length > 150 ? '...' : ''}
+                  </p>
+                </div>
+                
+                <div className="mb-2">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>İlerleme</span>
+                    <span>%{goal.progress || 0}</span>
                   </div>
-                  
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      {goal.description?.substring(0, 150)}
-                      {goal.description?.length > 150 ? '...' : ''}
-                    </p>
-                  </div>
-                  
-                  <div className="mb-2">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>İlerleme</span>
-                      <span>%{goal.progress || 0}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
-                      <div 
-                        className="bg-gradient-to-r from-cyan-500 to-green-500 h-full" 
-                        style={{ width: `${goal.progress || 0}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center mt-4 text-xs text-gray-500">
-                    <div className={showDeadline ? deadlineStatus.textColor : ''}>
-                      Hedef Tarihi: {new Date(goal.target_date).toLocaleDateString('tr-TR')}
-                    </div>
-                    <div>
-                      {new Date(goal.created_at).toLocaleDateString('tr-TR')}
-                    </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-cyan-500 to-green-500 h-full" 
+                      style={{ width: `${goal.progress || 0}%` }}
+                    ></div>
                   </div>
                 </div>
-              </Link>
+                
+                <div className="flex justify-between items-center mt-4 text-xs text-gray-500">
+                    <div className={showDeadline ? deadlineStatus.textColor : ''}>
+                    Hedef Tarihi: {new Date(goal.target_date).toLocaleDateString('tr-TR')}
+                  </div>
+                  <div>
+                    {new Date(goal.created_at).toLocaleDateString('tr-TR')}
+                  </div>
+                </div>
+              </div>
+            </Link>
             );
           })}
         </div>

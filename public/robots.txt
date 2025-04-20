@@ -1,0 +1,15 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /settings/
+Disallow: /notes/
+Disallow: /goals/
+Disallow: /groups/
+
+# Host
+Host: https://notefav.com
+
+# Sitemaps
+Sitemap: https://notefav.com/sitemap.xml

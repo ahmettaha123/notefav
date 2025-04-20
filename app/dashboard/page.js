@@ -28,7 +28,7 @@ const StatCard = ({ title, value, change, changeType, icon }) => (
       <div className="flex flex-col">
         <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</h3>
         <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{value || 0}</p>
-        {change && (
+        {(change !== 0 || value > 0) && (
           <div className="flex items-center mt-1">
             <span className={`text-xs font-medium ${
               changeType === 'good' ? 'text-green-500 dark:text-green-400' :
@@ -37,7 +37,7 @@ const StatCard = ({ title, value, change, changeType, icon }) => (
             }`}>
               {change > 0 ? '+' : ''}{change}%
             </span>
-            <span className="text-xs text-slate-400 dark:text-slate-500 ml-1">bu ay</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 ml-1">bu hafta</span>
           </div>
         )}
       </div>
@@ -49,10 +49,18 @@ const StatCard = ({ title, value, change, changeType, icon }) => (
 );
 
 export default function Dashboard() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, profile } = useAuth();
   const [notes, setNotes] = useState([]);
   const [goals, setGoals] = useState([]);
-  const [stats, setStats] = useState({ notes: 0, goals: 0, completed: 0 });
+  const [stats, setStats] = useState({ 
+    notes: 0, 
+    goals: 0, 
+    completed: 0, 
+    favoritedNotes: 0,
+    notesChange: 0,
+    goalsChange: 0, 
+    completedChange: 0
+  });
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const chartRef = useRef(null);
@@ -60,12 +68,28 @@ export default function Dashboard() {
   const notesAndGoalsCount = stats.notes + stats.goals;
   // Artık global router değişimlerini kullanacağız
   const { isNavigating } = useRouterChange();
-
-  // Eski sayfa geçişi efekti artık gerekli değil
-  // useEffect(() => {
-  //   // Sayfa geçişlerini dinle
-  //   ...
-  // }, []);
+  
+  // Kullanıcı adını dinamik bir şekilde profil bilgilerinden almak için getUserDisplayName fonksiyonunu düzenleyeceğim
+  const getUserDisplayName = () => {
+    if (!user) return "Ziyaretçi";
+    
+    // Profil bilgilerinden isim al, yoksa kullanıcı adını kullan
+    if (user.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
+    }
+    
+    // Profil tablosundan isim al (eğer fetchUserData fonksiyonunda profile verisi alındıysa)
+    if (profile?.display_name) {
+      return profile.display_name;
+    }
+    
+    // Email'i @ işaretine kadar göster
+    if (user.email) {
+      return user.email.split('@')[0];
+    }
+    
+    return "Kullanıcı";
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,32 +120,94 @@ export default function Dashboard() {
         if (goalsError) throw goalsError;
         setGoals(goalsData || []);
         
-        // İstatistikleri çek
-        const { data: notesCount, error: notesCountError } = await supabase
+        // Şu anki tarih
+        const now = new Date();
+        // Bir hafta öncesi
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(now.getDate() - 7);
+        
+        // Bu haftaki notları say
+        const { data: currentNotesCount, error: currentNotesError } = await supabase
           .from('notes')
           .select('id', { count: 'exact' })
           .eq('user_id', user.id);
           
-        const { data: goalsCount, error: goalsCountError } = await supabase
+        // Geçen haftaki notları say
+        const { data: previousNotesCount, error: previousNotesError } = await supabase
+          .from('notes')
+          .select('id', { count: 'exact' })
+          .eq('user_id', user.id)
+          .lt('created_at', oneWeekAgo.toISOString());
+          
+        // Bu haftaki hedefleri say
+        const { data: currentGoalsCount, error: currentGoalsError } = await supabase
           .from('goals')
           .select('id', { count: 'exact' })
           .eq('user_id', user.id);
           
-        const { data: completedGoals, error: completedGoalsError } = await supabase
+        // Geçen haftaki hedefleri say
+        const { data: previousGoalsCount, error: previousGoalsError } = await supabase
+          .from('goals')
+          .select('id', { count: 'exact' })
+          .eq('user_id', user.id)
+          .lt('created_at', oneWeekAgo.toISOString());
+          
+        // Bu haftaki tamamlanan hedefleri say
+        const { data: currentCompletedGoals, error: currentCompletedError } = await supabase
           .from('goals')
           .select('id', { count: 'exact' })
           .eq('user_id', user.id)
           .eq('status', 'completed');
           
-        if (notesCountError || goalsCountError || completedGoalsError) {
+        // Geçen haftaki tamamlanan hedefleri say
+        const { data: previousCompletedGoals, error: previousCompletedError } = await supabase
+          .from('goals')
+          .select('id', { count: 'exact' })
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+          .lt('created_at', oneWeekAgo.toISOString());
+          
+        if (currentNotesError || previousNotesError || currentGoalsError || 
+            previousGoalsError || currentCompletedError || previousCompletedError) {
           throw new Error('İstatistikler alınırken hata oluştu');
         }
         
+        // Değişim yüzdesi hesaplama fonksiyonu
+        const calculatePercentChange = (current, previous) => {
+          const currentValue = current?.length || 0;
+          const previousValue = previous?.length || 0;
+          
+          // Eğer önceki değer 0 ise ve şimdiki değer varsa, artış yüzdesi şimdiki değerin kendisi * 100 olur
+          // Örneğin 0'dan 2'ye çıktıysa %200 artış gösterilmeli
+          if (previousValue === 0 && currentValue > 0) {
+            return currentValue * 100;
+          } 
+          // Eğer önceki değer 0 ise ve şimdiki değer de 0 ise değişim yok
+          else if (previousValue === 0) {
+            return 0;
+          }
+          
+          // Normal yüzde hesaplama
+          return Math.round(((currentValue - previousValue) / previousValue) * 100);
+        };
+        
+        // Not değişim yüzdesi
+        const notesChange = calculatePercentChange(currentNotesCount, previousNotesCount);
+        
+        // Hedef değişim yüzdesi
+        const goalsChange = calculatePercentChange(currentGoalsCount, previousGoalsCount);
+        
+        // Tamamlanan hedef değişim yüzdesi
+        const completedChange = calculatePercentChange(currentCompletedGoals, previousCompletedGoals);
+        
         setStats({
-          notes: notesCount?.length || 0,
-          goals: goalsCount?.length || 0,
-          completed: completedGoals?.length || 0,
-          favoritedNotes: 0 // Favori not sayısı için varsayılan değer
+          notes: currentNotesCount?.length || 0,
+          goals: currentGoalsCount?.length || 0,
+          completed: currentCompletedGoals?.length || 0,
+          favoritedNotes: 0, // Favori not sayısı için varsayılan değer
+          notesChange,
+          goalsChange,
+          completedChange
         });
         
         // Kullanıcının üye olduğu grupları al
@@ -202,63 +288,130 @@ export default function Dashboard() {
 
   // Chart için useEffect
   useEffect(() => {
-    if (chartRef.current && notesAndGoalsCount > 0) {
-      const ctx = chartRef.current.getContext('2d');
-      
-      // Önceki chart'ı temizle
-      if (chartRef.current.chart) {
-        chartRef.current.chart.destroy();
-      }
-      
+    if (!chartRef.current || notesAndGoalsCount <= 0) {
+      return; // Çıkış yap - grafiği çizmek için koşullar uygun değil
+    }
+    
+    const ctx = chartRef.current.getContext('2d');
+    if (!ctx) {
+      return; // Canvas context yoksa çıkış yap
+    }
+    
+    // Önceki chart'ı temizle
+    if (chartRef.current.chart) {
+      chartRef.current.chart.destroy();
+      chartRef.current.chart = null;
+    }
+    
+    // Cihaz türünü kontrol et
+    const isMobile = window.innerWidth < 768;
+    
+    // Gecikme ekleyerek DOM elementi hazır olana kadar bekle
+    const timer = setTimeout(() => {
       // Yeni chart oluştur
       import('chart.js').then(({ Chart, registerables }) => {
         Chart.register(...registerables);
         
-        const newChart = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: ['Notlar', 'Hedefler', 'Tamamlanan Hedefler'],
-            datasets: [{
-              data: [stats.notes, stats.goals - stats.completed, stats.completed],
-              backgroundColor: [
-                '#f97316', // orange-500
-                '#4f46e5', // indigo-600 
-                '#10b981', // emerald-500
-              ],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  usePointStyle: true,
-                  padding: 15,
-                  color: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'
+        // Component unmount edildiyse çıkış yap
+        if (!chartRef.current) return;
+        
+        try {
+          const newChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: ['Notlar', 'Hedefler', 'Tamamlanan Hedefler'],
+              datasets: [{
+                data: [stats.notes, stats.goals - stats.completed, stats.completed],
+                backgroundColor: [
+                  '#f97316', // orange-500
+                  '#4f46e5', // indigo-600 
+                  '#10b981', // emerald-500
+                ],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove', 'touchend'],
+              plugins: {
+                legend: {
+                  position: isMobile ? 'top' : 'bottom',
+                  labels: {
+                    boxWidth: isMobile ? 12 : 15,
+                    padding: isMobile ? 10 : 15,
+                    font: {
+                      size: isMobile ? 10 : 12
+                    },
+                    color: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569',
+                    usePointStyle: true
+                  }
+                },
+                tooltip: {
+                  enabled: true,
+                  backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
+                  titleColor: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#0f172a',
+                  bodyColor: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569',
+                  borderColor: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0',
+                  borderWidth: 1,
+                  padding: 10,
+                  cornerRadius: 8,
+                  usePointStyle: true
                 }
-              },
-              tooltip: {
-                backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                titleColor: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#0f172a',
-                bodyColor: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569',
-                borderColor: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0',
-                borderWidth: 1,
-                padding: 10,
-                cornerRadius: 8,
-                usePointStyle: true
               }
             }
+          });
+          
+          // Chart referansını kaydet
+          chartRef.current.chart = newChart;
+          
+          // Resize olayını dinle - güvenlik kontrolü ile
+          let resizeObserver;
+          try {
+            if (chartRef.current && chartRef.current.parentNode) {
+              resizeObserver = new ResizeObserver(() => {
+                if (newChart && typeof newChart.resize === 'function' && !newChart.destroyed) {
+                  try {
+                    newChart.resize();
+                  } catch (error) {
+                    console.error('Chart resize hatası:', error);
+                  }
+                }
+              });
+              
+              resizeObserver.observe(chartRef.current.parentNode);
+            }
+          } catch (error) {
+            console.error('ResizeObserver hatası:', error);
           }
-        });
-        
-        // Chart referansını kaydet
-        chartRef.current.chart = newChart;
+          
+          // Temizlik fonksiyonu
+          return () => {
+            clearTimeout(timer);
+            if (resizeObserver) {
+              resizeObserver.disconnect();
+            }
+            if (newChart && !newChart.destroyed) {
+              newChart.destroy();
+            }
+          };
+        } catch (error) {
+          console.error('Chart oluşturma hatası:', error);
+        }
+      }).catch(error => {
+        console.error('Chart.js yükleme hatası:', error);
       });
-    }
-  }, [stats, notesAndGoalsCount, chartRef.current]);
+    }, 100); // 100ms bekleyerek DOM elementinin tamamen yüklenmesini bekle
+    
+    // useEffect temizlik
+    return () => {
+      clearTimeout(timer);
+      if (chartRef.current && chartRef.current.chart) {
+        chartRef.current.chart.destroy();
+        chartRef.current.chart = null;
+      }
+    };
+  }, [stats, notesAndGoalsCount]);
 
   if (authLoading) {
     return <Spinner />;
@@ -291,8 +444,12 @@ export default function Dashboard() {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Hoş Geldin, <span className="text-orange-500">{user?.user_metadata?.full_name || 'Ahmet'}</span></h1>
-        <p className="text-slate-500 dark:text-slate-400">İşte bugün neler olup bitiyor:</p>
+        <h1 className="text-2xl font-semibold mb-2">
+          Hoş geldin, <span className="text-orange-500 font-bold">{getUserDisplayName()}</span>!
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300">
+          Bugün nasıl bir ilerleme kaydetmek istersin?
+        </p>
       </div>
 
       {loading || authLoading || isNavigating ? (
@@ -303,22 +460,22 @@ export default function Dashboard() {
             <StatCard 
               title="Toplam Not" 
               value={stats.notes}
-              change={15}
-              changeType="good"
+              change={stats.notesChange}
+              changeType={stats.notesChange >= 0 ? 'good' : 'bad'}
               icon={<DocumentTextIcon className="h-6 w-6" />}
             />
             <StatCard 
               title="Toplam Hedef" 
               value={stats.goals}
-              change={5}
-              changeType="good"
+              change={stats.goalsChange}
+              changeType={stats.goalsChange >= 0 ? 'good' : 'bad'}
               icon={<FlagIcon className="h-6 w-6" />}
             />
             <StatCard 
               title="Tamamlanan Hedefler" 
               value={stats.completed}
-              change={10}
-              changeType="good"
+              change={stats.completedChange}
+              changeType={stats.completedChange >= 0 ? 'good' : 'bad'}
               icon={<CheckCircleIcon className="h-6 w-6" />}
             />
             <StatCard 
@@ -392,8 +549,8 @@ export default function Dashboard() {
               <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">İstatistikler</h2>
               
               {notesAndGoalsCount > 0 ? (
-                <div className="h-64 relative">
-                  <canvas ref={chartRef}></canvas>
+                <div className="h-60 md:h-64 relative w-full flex items-center justify-center">
+                  <canvas ref={chartRef} style={{ touchAction: 'none', minHeight: '200px' }}></canvas>
                 </div>
               ) : (
                 <div className="text-center py-8 h-64 flex flex-col justify-center">
