@@ -333,15 +333,15 @@ export default function Groups() {
           )}
           
           {totalGroups === 0 && (
-            <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-lg shadow-sm dark:shadow-none dark:border dark:border-slate-800">
-              <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 mx-auto rounded-full flex items-center justify-center mb-6">
-                <FaUsers className="h-10 w-10 text-blue-500" />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-24 h-24 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6">
+                <FaUsers className="h-12 w-12 text-blue-500" />
               </div>
-              <h2 className="text-xl font-bold mb-2">Henüz bir grubunuz yok</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+              <h2 className="text-2xl font-bold mb-3 text-gray-800 dark:text-white">Henüz bir grubunuz yok</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
                 Yeni bir grup oluşturarak başlayabilir veya arkadaşlarınızın gruplarına katılabilirsiniz.
               </p>
-              <Link href="/groups/new" className="btn-primary">
+              <Link href="/groups/new" className="btn-primary px-6 py-3 text-lg flex items-center">
                 <FaPlus className="mr-2" /> İlk Grubu Oluştur
               </Link>
             </div>

@@ -156,7 +156,7 @@ function ProfileContent() {
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -191,11 +191,11 @@ function ProfileContent() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-                  {isEditing ? (
-                    <input
-                      type="text"
+              {isEditing ? (
+                    <input 
+                      type="text" 
                       className="bg-slate-100 dark:bg-slate-800 border-0 rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-                      value={displayName}
+                      value={displayName} 
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder="İsminiz"
                     />
@@ -206,7 +206,7 @@ function ProfileContent() {
                 <p className="text-slate-500 dark:text-slate-400">
                   {user.email}
                 </p>
-              </div>
+                  </div>
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
@@ -216,26 +216,26 @@ function ProfileContent() {
                 </button>
               ) : (
                 <div className="ml-auto flex gap-2">
-                  <button
-                    onClick={() => {
-                      setIsEditing(false);
+                    <button 
+                      onClick={() => {
+                        setIsEditing(false);
                       setDisplayName(profile.full_name || user.email?.split('@')[0] || '');
                       setBio(profile.bio || '');
-                    }}
+                      }}
                     className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-2 px-4 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    İptal
-                  </button>
-                  <button
-                    onClick={handleSaveProfile}
-                    disabled={saving}
+                    >
+                      İptal
+                    </button>
+                    <button 
+                      onClick={handleSaveProfile}
+                      disabled={saving}
                     className="bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {saving ? 'Kaydediliyor...' : 'Kaydet'}
-                  </button>
-                </div>
+                    >
+                      {saving ? 'Kaydediliyor...' : 'Kaydet'}
+                    </button>
+                  </div>
               )}
-            </div>
+                </div>
             
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
@@ -249,13 +249,13 @@ function ProfileContent() {
                   placeholder="Kendiniz hakkında kısa bir açıklama..."
                 ></textarea>
               ) : (
-                <p className="text-slate-600 dark:text-slate-400">
+                    <p className="text-slate-600 dark:text-slate-400">
                   {bio || 'Henüz bir biyografi eklenmemiş.'}
-                </p>
+                    </p>
               )}
-            </div>
-            
-            <div>
+                  </div>
+                  
+                  <div>
               <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                 Hesap Bilgileri
               </h3>
@@ -301,8 +301,8 @@ function ProfileContent() {
                       <div className="text-sm text-slate-500 dark:text-slate-400">Toplam Not</div>
                       <div className="text-xl font-bold text-slate-800 dark:text-white">{notesCount}</div>
                     </div>
-                  </div>
-                </div>
+                      </div>
+                      </div>
                 
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
@@ -314,10 +314,10 @@ function ProfileContent() {
                     <div>
                       <div className="text-sm text-slate-500 dark:text-slate-400">Toplam Hedef</div>
                       <div className="text-xl font-bold text-slate-800 dark:text-white">{goalsCount}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
+                  
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/20 text-orange-500 flex items-center justify-center mr-3">
@@ -331,9 +331,9 @@ function ProfileContent() {
                     </div>
                   </div>
                 </div>
-              </div>
             </div>
-            
+          </div>
+          
             <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-none dark:border dark:border-slate-800 p-6">
               <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                 Hızlı Erişim
@@ -357,7 +357,7 @@ function ProfileContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                   <span className="text-slate-700 dark:text-slate-300">Ayarlar</span>
-                </Link>
+              </Link>
               </div>
             </div>
           </div>

@@ -13,7 +13,7 @@ export const metadata = {
   title: 'NoteFav - Fikirlerini Not Al, Hedeflerini Gerçekleştir!',
   description: 'NoteFav ile notlarınızı düzenleyin, hedeflerinizi planlayın ve projelerinizi takip edin. Ücretsiz not alma, görev takibi ve hatırlatıcı uygulaması.',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-  keywords: 'not alma, notlar, görev takibi, hedef planlama, notfav, not tutma uygulaması, ücretsiz not uygulaması, online not defteri, hatırlatıcı, ajanda, yapılacaklar listesi',
+  keywords: 'not alma, notlar, görev takibi, hedef planlama, notefav, not tutma uygulaması, ücretsiz not uygulaması, online not defteri, hatırlatıcı, ajanda, yapılacaklar listesi',
   authors: [{ name: 'NoteFav' }],
   openGraph: {
     title: 'NoteFav - Fikirlerini Not Al, Hedeflerini Gerçekleştir!',
