@@ -4,7 +4,7 @@
 
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
-  NEXT_USE_NETLIFY_EDGE = "true"
+  NEXT_USE_NETLIFY_EDGE = "1"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs" 
